@@ -4,12 +4,13 @@
 #include <QLocale>
 #include <QTranslator>
 
-namespace {
-void addSetFromMrdFile(QImagesWidget& w, QString filepath){
 
+#include "mrdparser.h"
+void testMrd(){
+    QString fpath = "D:/Projects/QImagesWidget/data/20230528103740-T2_TSE-T-3k#1.mrd";
+    auto data = MrdParser::parseFile(fpath);
 }
 
-} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
 
     QImagesWidget w;
 
-    addSetFromMrdFile(w, "./data/20230528103740-T2_TSE-T-3k#1.mrd");
+    testMrd();
     w.show();
     return a.exec();
 }

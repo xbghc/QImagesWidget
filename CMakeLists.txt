@@ -9,6 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(FFTW3_DIR "D:/tools/vcpkg/installed/x64-windows/share/fftw3")
+find_package(FFTW3 CONFIG REQUIRED)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
@@ -16,13 +18,13 @@ set(PROJECT_SOURCES
         main.cpp
         qimageswidget.cpp
         qimageswidget.h
-
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(QImagesWidget
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        mrdparser.h mrdparser.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET QImagesWidget APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -43,7 +45,11 @@ else()
     endif()
 endif()
 
-target_link_libraries(QImagesWidget PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_include_directories(QImagesWidget PUBLIC ${FFTW3_INCLUDE_DIRS})
+target_link_libraries(QImagesWidget PRIVATE
+    FFTW3::fftw3
+    Qt${QT_VERSION_MAJOR}::Widgets
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
