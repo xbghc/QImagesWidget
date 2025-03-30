@@ -1,11 +1,20 @@
 #ifndef MRDPARSER_H
 #define MRDPARSER_H
 
+#include <QImage>
+#include <QList>
 #include <QString>
 #include <fftw3.h>
 
+// kdata.shape = experiments,echoes,slices,views,views2,samples
 struct MrdData{
     fftw_complex* kdata;
+    size_t samples;
+    size_t views;
+    size_t views2;
+    size_t slices;
+    size_t echoes;
+    size_t experiments;
 
     MrdData(){}
     ~MrdData(){
@@ -22,6 +31,7 @@ private:
 
 public:
     static MrdData* parseFile(QString fpath);
+    static QList<QImage> reconImages(MrdData* mrd, size_t width=256, size_t height=256);
 };
 
 #endif // MRDPARSER_H
