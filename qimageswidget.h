@@ -7,13 +7,9 @@
 #include <QList>
 #include <QWidget>
 
-struct ImageSet
-{
-    QString name;
-    QList<QImage> images;
-    ImageSet() {}
-    ImageSet(QString _name, QList<QImage> _images):name(_name), images(_images){}
-};
+namespace Ui{
+class QImagesWidget;
+}
 
 class QImagesWidget : public QWidget
 {
@@ -23,42 +19,15 @@ public:
     QImagesWidget(QWidget *parent = nullptr);
     ~QImagesWidget();
 
-    int addSet(QList<QImage> images, QString setName);
-    int addSetFromMrdFile(QString fpath, QString setName);
+    int loadMrdFiles(QString path); // path是任意一个通道文件的路径，但是所有文件都需要在同一文件夹中
 
-    int getHeight();
-    int getWidth();
+    void setRowNum(int row);
+    void setColNum(int col);
     void setHeight(int height);
     void setWidth(int width);
-
-    void setCols(int cols);
-    void setLins(int lins);
-
-    void selectImages(QList<QString> sets, QList<int> images);
-    void updateMarkers();
 private:
-    QList<ImageSet> m_imageSets;
-    QList<QGraphicsScene> m_scenes;
+    QList<QList<QImage>> m_channels;
 
-    QGridLayout grid;
-
-    int m_cols;
-    int m_lins;
-    int curPageNum;
-
-    int m_height;
-    int m_width;
-
-    int diffDirection; // 1：纵向对比, 0: 横向对比
-
-    QList<QString> curSets;
-    QList<int> curImages;
-
-    void clearGrid();
-    void addScene(const ImageSet& set, int index, int lin, int col);
-
-    ImageSet* getSet(QString name);
-    QList<ImageSet> getCurSets();
-
+    Ui::QImagesWidget* ui;
 };
 #endif // QIMAGESWIDGET_H

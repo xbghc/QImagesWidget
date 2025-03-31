@@ -1,130 +1,104 @@
 #include "qimageswidget.h"
+#include "ui_qimageswidget.h"
 
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QGraphicsView>
 
+#include "mrdparser.h"
+
+namespace {
+QStringList getAllChannelsFile(QString path){
+    QFileInfo fileInfo(path);
+    if(!fileInfo.exists()){
+        qWarning() << "File path does not exist: " << path;
+        return {};
+    }
+
+    auto dir = fileInfo.absoluteDir();
+    auto fileName = fileInfo.fileName();
+
+    static QRegularExpression namePattern("^(.*)#(\\d+)\\.(\\w+)$");
+    QRegularExpressionMatch match = namePattern.match(fileName);
+    if (!match.hasMatch()) {
+        qWarning() << "Invalid file name pattern, expected format: prefix#number.suffix";
+        return {};
+    }
+
+    QString prefix = QRegularExpression::escape(match.captured(1));
+    QString suffix = QRegularExpression::escape(match.captured(3));
+
+    const QStringList files = dir.entryList(QDir::Files | QDir::Readable);
+    auto newPattern = QString("^%1#\\d+\\.%2$").arg(prefix, suffix);
+    auto result = files.filter(QRegularExpression(newPattern));
+    for(auto& fn:result){
+        fn = dir.filePath(fn);
+    }
+    return result;
+}
+
+template<typename T>
+QList<T*> getPointerList(QList<T> objList){
+    QList<T*> list;
+    for(int i=0;i<objList.size();i++){
+        auto obj = objList[i];
+        qDebug() << obj;
+        list.emplace_back(&obj);
+    }
+
+    // for(auto& obj:objList){
+    //     list.push_back(&obj);
+    // }
+    return list;
+}
+
+} // namespace
+
+
 QImagesWidget::QImagesWidget(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), ui(new Ui::QImagesWidget)
 {
-    setLayout(&grid);
-    m_width = 256;
-    m_height = 256;
-    curPageNum = 0;
+    ui->setupUi(this);
 }
 
 QImagesWidget::~QImagesWidget()
 {
 }
 
-int QImagesWidget::addSet(QList<QImage> images, QString setName)
+int QImagesWidget::loadMrdFiles(QString fpath)
 {
-    m_imageSets.append(ImageSet(setName, images));
-    return 0;
+    auto files = getAllChannelsFile(fpath);
+    for(const auto& file:files){
+        auto content = MrdParser::parseFile(file);
+        m_channels.emplace_back(MrdParser::reconImages(content));
+
+        // TODO 在用户界面显示
+        // auto label = file.split("#")[1].split(".")[0];
+    }
+    // 控制显示
+    ui->contentWidget->setImages(m_channels[0]);
+
+    return files.size();
 }
 
-int QImagesWidget::addSetFromMrdFile(QString fpath, QString setName)
+void QImagesWidget::setRowNum(int row)
 {
-    return 0;
+    ui->contentWidget->setRowNum(row);
 }
 
-int QImagesWidget::getHeight()
+void QImagesWidget::setColNum(int col)
 {
-    return m_height;
-}
-
-int QImagesWidget::getWidth()
-{
-    return m_width;
+    ui->contentWidget->setColNum(col);
 }
 
 void QImagesWidget::setHeight(int height)
 {
-    m_height = height;
+    ui->contentWidget->setHeight(height);
 }
 
 void QImagesWidget::setWidth(int width)
 {
-    m_width = width;
+    ui->contentWidget->setWidth(width);
 }
 
-void QImagesWidget::setCols(int cols)
-{
-    m_cols = cols;
-    updateMarkers();
-}
-
-void QImagesWidget::setLins(int lins)
-{
-    m_lins = lins;
-    updateMarkers();
-}
-
-void QImagesWidget::selectImages(QList<QString> sets, QList<int> images)
-{
-    curSets = sets;
-    curImages = images;
-    updateMarkers();
-}
-
-void QImagesWidget::updateMarkers()
-{
-    clearGrid();
-
-    if(curSets.length() == 1){
-        // 仅有一个Set，逐个列出图片
-
-        const ImageSet* curSet = getSet(curSets[0]);
-        int size = curSet->images.size();
-        int offset = curPageNum * m_lins * m_cols;
-        for(int i=0;i<m_lins&&offset<size;i++){
-            for(int j=0;j<m_cols&&offset<size;j++){
-                addScene(*curSet, offset, i, j);
-                offset++;
-            }
-        }
-    }else if(curImages.length() == 1){
-        // 仅有一个ImageNum，逐个列出图片
-
-    }else{
-        // 对比各个图片
-    }
-
-}
-
-void QImagesWidget::clearGrid()
-{
-    while(grid.count() > 0){
-        auto widget = grid.takeAt(0)->widget();
-        widget->setParent(nullptr);
-        delete widget;
-    }
-    return;
-}
-
-void QImagesWidget::addScene(const ImageSet &set, int index, int lin, int col)
-{
-    auto scene = new QGraphicsScene(0, 0, m_width, m_height);
-    scene->addPixmap(QPixmap::fromImage(set.images[index]));
-
-    auto view = new QGraphicsView(scene);
-    grid.addWidget(view, lin, col);
-}
-
-ImageSet* QImagesWidget::getSet(QString name)
-{
-    for(auto& set:m_imageSets){
-        if(set.name == name){
-            return &set;
-        }
-    }
-    return nullptr;
-}
-
-QList<ImageSet> QImagesWidget::getCurSets()
-{
-    QList<ImageSet> sets;
-    for(const auto& name:curSets){
-        sets.append(*getSet(name));
-    }
-    return sets;
-}
