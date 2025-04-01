@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>771</width>
+    <width>936</width>
     <height>445</height>
    </rect>
   </property>
@@ -46,14 +46,33 @@ padding: 5px;
        </widget>
       </item>
       <item>
+       <widget class="QWidget" name="widget" native="true"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Images</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget_2" native="true"/>
+      </item>
+      <item>
        <widget class="QLabel" name="label">
         <property name="text">
          <string>column</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox">
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -64,10 +83,16 @@ padding: 5px;
         <property name="text">
          <string>row</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_2">
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -78,20 +103,34 @@ padding: 5px;
         <property name="text">
          <string>height</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox_3"/>
+       <widget class="QSpinBox" name="spinBox_3">
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>width</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox_4"/>
+       <widget class="QSpinBox" name="spinBox_4">
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QToolButton" name="toolButton">

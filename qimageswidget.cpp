@@ -64,6 +64,7 @@ QImagesWidget::QImagesWidget(QWidget *parent)
 
 QImagesWidget::~QImagesWidget()
 {
+    delete ui;
 }
 
 int QImagesWidget::loadMrdFiles(QString fpath)
