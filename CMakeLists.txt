@@ -32,6 +32,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         qimageswidget.ui
         icons.qrc
         contentwidget.h contentwidget.cpp
+        components/qcheckcombobox.h components/qcheckcombobox.cpp
+        components/qcheckcombobox.qrc
 
     )
 # Define target properties for Android with Qt 6 as:
@@ -53,7 +55,10 @@ else()
     endif()
 endif()
 
-target_include_directories(QImagesWidget PUBLIC ${FFTW3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(QImagesWidget PUBLIC
+    ${FFTW3_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 target_link_libraries(QImagesWidget PRIVATE
     FFTW3::fftw3
     Qt${QT_VERSION_MAJOR}::Widgets

@@ -46,7 +46,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget" native="true"/>
+       <widget class="QCheckComboBox" name="widget" native="true"/>
       </item>
       <item>
        <widget class="QLabel" name="label_6">
@@ -56,7 +56,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_2" native="true"/>
+       <widget class="QCheckComboBox" name="widget_2" native="true"/>
       </item>
       <item>
        <widget class="QLabel" name="label">
@@ -229,6 +229,12 @@ padding: 5px;
    <class>ContentWidget</class>
    <extends>QWidget</extends>
    <header>contentwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCheckComboBox</class>
+   <extends>QWidget</extends>
+   <header>components/qcheckcombobox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
