@@ -70,6 +70,12 @@ padding: 5px;
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox">
+        <property name="minimumSize">
+         <size>
+          <width>10</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
         </property>
@@ -90,6 +96,12 @@ padding: 5px;
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>15</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
         </property>
@@ -110,6 +122,12 @@ padding: 5px;
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_3">
+        <property name="minimumSize">
+         <size>
+          <width>15</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
         </property>
@@ -127,6 +145,12 @@ padding: 5px;
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_4">
+        <property name="minimumSize">
+         <size>
+          <width>15</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
         </property>
