@@ -13,3 +13,13 @@ QByteArray read(QString filepath)
 
     return file.readAll();
 }
+
+void newEmptyFile(QFile &file)
+{
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug() << "failed to create file: " << file.fileName();
+    }
+    QDataStream out(&file);
+    out << (qint32)0;
+    file.close();
+}

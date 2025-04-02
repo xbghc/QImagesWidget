@@ -68,7 +68,7 @@ QImagesWidget::~QImagesWidget()
 }
 
 int QImagesWidget::loadMrdFiles(QString fpath)
-{
+{    
     auto files = getAllChannelsFile(fpath);
 
     for(const auto& file:files){
@@ -87,6 +87,11 @@ int QImagesWidget::loadMrdFiles(QString fpath)
     }
 
     return files.size();
+}
+
+void QImagesWidget::clear()
+{
+    m_channels.clear();
 }
 
 void QImagesWidget::setRowNum(int row)

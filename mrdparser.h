@@ -30,6 +30,7 @@ private:
     MrdParser& operator=(const MrdParser&) = delete;
 
 public:
+    static MrdData* parse(const QByteArray& content);
     static MrdData* parseFile(QString fpath);
     static QList<QImage> reconImages(MrdData* mrd, size_t width=256, size_t height=256);
 };

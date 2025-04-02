@@ -20,6 +20,7 @@ public:
     ~QImagesWidget();
 
     int loadMrdFiles(QString path); // path是任意一个通道文件的路径，但是所有文件都需要在同一文件夹中
+    void clear();
 
 public slots:
     void setRowNum(int row);

@@ -109,14 +109,8 @@ void fftshift3d(fftw_complex* data, const size_t* shape) {
 }
 } // namespace
 
-MrdData* MrdParser::parseFile(QString fpath)
+MrdData *MrdParser::parse(const QByteArray &content)
 {
-    // ref:
-    //   url: https://github.com/hongmingjian/mrscan/blob/master/smisscanner.py
-    //   function: SmisScanner.parseMrd
-
-    auto content = read(fpath);
-
     // header
     int samples = qFromLittleEndian<qint32>(content.constData());
     int views = qFromLittleEndian<qint32>(content.constData() + 4);
@@ -170,6 +164,16 @@ MrdData* MrdParser::parseFile(QString fpath)
     mrdData->views2 = views2;
 
     return mrdData;
+}
+
+MrdData* MrdParser::parseFile(QString fpath)
+{
+    // ref:
+    //   url: https://github.com/hongmingjian/mrscan/blob/master/smisscanner.py
+    //   function: SmisScanner.parseMrd
+
+    auto content = read(fpath);
+    return parse(content);
 }
 
 QList<QImage> MrdParser::reconImages(MrdData* mrd, size_t width, size_t height)
