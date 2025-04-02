@@ -16,14 +16,9 @@ QCheckComboBox::QCheckComboBox(QWidget *parent)
 
     initButton();
     m_text->setEnabled(false);
-    m_popup->setModel(m_model);
-    m_popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
-    m_popup->installEventFilter(this);
-    m_popup->hide();
+    initPopup();
 
     updateLayout();
-
-    addItem("hello");
 }
 
 QCheckComboBox::~QCheckComboBox()
@@ -105,6 +100,19 @@ bool QCheckComboBox::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
+void QCheckComboBox::onItemClicked(const QModelIndex& index)
+{
+    auto v = m_model->data(index, Qt::CheckStateRole);
+    auto checkStatus = qvariant_cast<Qt::CheckState>(v);
+    if(checkStatus == Qt::Unchecked){
+        m_model->setData(index, Qt::Checked, Qt::CheckStateRole);
+    }else if(checkStatus == Qt::Checked){
+        m_model->setData(index, Qt::Unchecked, Qt::CheckStateRole);
+    }else{
+        qDebug() << "unsupport check status: " << checkStatus;
+    }
+}
+
 void QCheckComboBox::updateLayout()
 {
     auto margins = contentsMargins();
@@ -166,6 +174,16 @@ void QCheckComboBox::initButton()
     m_button->raise();
     m_button->installEventFilter(this);
 
+}
+
+void QCheckComboBox::initPopup()
+{
+    m_popup->hide();
+
+    m_popup->setModel(m_model);
+    m_popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
+    m_popup->installEventFilter(this);
+    connect(m_popup, &QListView::clicked, this, &QCheckComboBox::onItemClicked);
 }
 
 void QCheckComboBox::passButtonClick(QObject *obj, QEvent *event)

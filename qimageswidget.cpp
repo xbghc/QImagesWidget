@@ -38,21 +38,6 @@ QStringList getAllChannelsFile(QString path){
     return result;
 }
 
-template<typename T>
-QList<T*> getPointerList(QList<T> objList){
-    QList<T*> list;
-    for(int i=0;i<objList.size();i++){
-        auto obj = objList[i];
-        qDebug() << obj;
-        list.emplace_back(&obj);
-    }
-
-    // for(auto& obj:objList){
-    //     list.push_back(&obj);
-    // }
-    return list;
-}
-
 } // namespace
 
 
@@ -77,7 +62,16 @@ int QImagesWidget::loadMrdFiles(QString fpath)
         // TODO 在用户界面显示
         // auto label = file.split("#")[1].split(".")[0];
     }
-    // 控制显示
+
+
+    for(int i=0;i<files.size();i++){
+        ui->ChannelBox->addItem(QString::number(i+1), i);
+    }
+    auto imageNum = m_channels[0].length();
+    for(int i=0;i<imageNum;i++){
+        ui->ImageBox->addItem(QString::number(i+1), i);
+    }
+
     ui->contentWidget->setImages(m_channels[0]);
 
     return files.size();

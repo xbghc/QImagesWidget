@@ -46,7 +46,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QCheckComboBox" name="widget" native="true"/>
+       <widget class="QCheckComboBox" name="ChannelBox" native="true"/>
       </item>
       <item>
        <widget class="QLabel" name="label_6">
@@ -56,7 +56,14 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QCheckComboBox" name="widget_2" native="true"/>
+       <widget class="QCheckComboBox" name="ImageBox" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>40</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label">
@@ -72,8 +79,8 @@ padding: 5px;
        <widget class="QSpinBox" name="spinBox">
         <property name="minimumSize">
          <size>
-          <width>10</width>
-          <height>15</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
         <property name="buttonSymbols">
