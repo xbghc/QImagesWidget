@@ -29,5 +29,7 @@ private:
     QList<QList<QImage>> m_channels;
 
     Ui::QImagesWidget* ui;
+
+    void updateMarkers();
 };
 #endif // QIMAGESWIDGET_H

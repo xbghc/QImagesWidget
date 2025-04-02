@@ -40,6 +40,7 @@ void ContentWidget::setImages(QList<QImage> images)
 {
     m_images = images;
     m_pageIndex = 0;
+    updateMarkers();
 }
 
 size_t ContentWidget::colNum()

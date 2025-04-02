@@ -21,6 +21,9 @@ public:
     void addItem(const QString& text, const QVariant& data=QVariant());
     QList<QVariant> values(QCheckComboBox::Filter filter=Filter::ALL); // 因为需要ALL，所以不能用Qt::Status作为筛选参数
 
+signals:
+    void itemStatusChanged();
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *e) override;

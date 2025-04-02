@@ -12,8 +12,6 @@ QCheckComboBox::QCheckComboBox(QWidget *parent)
     m_popup(new QListView(this)),
     m_model(new QStandardItemModel(this))
 {
-    setMinimumWidth(40);
-
     initButton();
     m_text->setEnabled(false);
     initPopup();
@@ -111,6 +109,7 @@ void QCheckComboBox::onItemClicked(const QModelIndex& index)
     }else{
         qDebug() << "unsupport check status: " << checkStatus;
     }
+    emit itemStatusChanged();
 }
 
 void QCheckComboBox::updateLayout()

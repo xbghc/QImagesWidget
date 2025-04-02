@@ -45,6 +45,11 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::QImagesWidget)
 {
     ui->setupUi(this);
+    ui->ChannelBox->setMinimumWidth(60);
+    ui->ImageBox->setMinimumWidth(80);
+
+    connect(ui->ChannelBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
+    connect(ui->ImageBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
 }
 
 QImagesWidget::~QImagesWidget()
@@ -55,24 +60,21 @@ QImagesWidget::~QImagesWidget()
 int QImagesWidget::loadMrdFiles(QString fpath)
 {
     auto files = getAllChannelsFile(fpath);
+
     for(const auto& file:files){
         auto content = MrdParser::parseFile(file);
         m_channels.emplace_back(MrdParser::reconImages(content));
 
-        // TODO 在用户界面显示
-        // auto label = file.split("#")[1].split(".")[0];
+        // 更新通道列表
+        auto label = file.split("#")[1].split(".")[0];
+        ui->ChannelBox->addItem(label, m_channels.length()-1);
     }
 
-
-    for(int i=0;i<files.size();i++){
-        ui->ChannelBox->addItem(QString::number(i+1), i);
-    }
+    // 更新图片列表
     auto imageNum = m_channels[0].length();
     for(int i=0;i<imageNum;i++){
         ui->ImageBox->addItem(QString::number(i+1), i);
     }
-
-    ui->contentWidget->setImages(m_channels[0]);
 
     return files.size();
 }
@@ -95,5 +97,21 @@ void QImagesWidget::setHeight(int height)
 void QImagesWidget::setWidth(int width)
 {
     ui->contentWidget->setWidth(width);
+}
+
+void QImagesWidget::updateMarkers()
+{
+    auto checkedChannels = ui->ChannelBox->values(QCheckComboBox::CHECKED);
+    auto checkedImages = ui->ImageBox->values(QCheckComboBox::CHECKED);
+
+    QList<QImage> images;
+    for(int i=0;i<checkedChannels.length();i++){
+        for(int j=0;j<checkedImages.length();j++){
+            auto channelIndex = checkedChannels[i].toInt();
+            auto imageIndex = checkedImages[j].toInt();
+            images.push_back(m_channels[channelIndex][imageIndex]);
+        }
+    }
+    ui->contentWidget->setImages(images);
 }
 
