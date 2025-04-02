@@ -50,6 +50,16 @@ QImagesWidget::QImagesWidget(QWidget *parent)
 
     connect(ui->ChannelBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
     connect(ui->ImageBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
+
+    connect(ui->rowSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setRowNum);
+    connect(ui->columnSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setColNum);
+    connect(ui->widthSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setWidth);
+    connect(ui->heightSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setHeight);
+
+    setColNum(ui->columnSpin->value());
+    setRowNum(ui->rowSpin->value());
+    setWidth(ui->widthSpin->value());
+    setHeight(ui->heightSpin->value());
 }
 
 QImagesWidget::~QImagesWidget()

@@ -76,7 +76,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox">
+       <widget class="QSpinBox" name="columnSpin">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -87,7 +87,7 @@ padding: 5px;
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>3</number>
         </property>
        </widget>
       </item>
@@ -102,7 +102,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox_2">
+       <widget class="QSpinBox" name="rowSpin">
         <property name="minimumSize">
          <size>
           <width>15</width>
@@ -114,6 +114,9 @@ padding: 5px;
         </property>
         <property name="minimum">
          <number>1</number>
+        </property>
+        <property name="value">
+         <number>4</number>
         </property>
        </widget>
       </item>
@@ -128,7 +131,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox_3">
+       <widget class="QSpinBox" name="heightSpin">
         <property name="minimumSize">
          <size>
           <width>15</width>
@@ -137,6 +140,15 @@ padding: 5px;
         </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+        <property name="value">
+         <number>128</number>
         </property>
        </widget>
       </item>
@@ -151,7 +163,7 @@ padding: 5px;
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox_4">
+       <widget class="QSpinBox" name="widthSpin">
         <property name="minimumSize">
          <size>
           <width>15</width>
@@ -160,6 +172,15 @@ padding: 5px;
         </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+        <property name="value">
+         <number>128</number>
         </property>
        </widget>
       </item>
