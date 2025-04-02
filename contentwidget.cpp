@@ -7,7 +7,7 @@
 ContentWidget::ContentWidget(QWidget *parent)
     : QWidget{parent}
 {
-    setLayout(new QGridLayout);
+    setLayout(new QGridLayout(this));
 }
 
 void ContentWidget::setColNum(size_t cols)
@@ -95,7 +95,12 @@ void ContentWidget::updateGrid()
         for(size_t col=0;col<m_colNum;col++){
             auto scene = new QGraphicsScene(0, 0, m_width, m_height);
             auto view = new QGraphicsView(scene);
-            grid->addWidget(view, row, col);
+
+            // 下面两句可以去除边框，但应该有更好的办法
+            view->setFixedSize(QSize(m_width, m_height));
+            view->setStyleSheet("border: none");
+
+            grid->addWidget(view, row, col, Qt::AlignCenter);
         }
     }
 }
