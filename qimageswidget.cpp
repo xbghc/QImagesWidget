@@ -56,10 +56,13 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     connect(ui->widthSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setWidth);
     connect(ui->heightSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setHeight);
 
-    setColNum(ui->columnSpin->value());
-    setRowNum(ui->rowSpin->value());
-    setWidth(ui->widthSpin->value());
-    setHeight(ui->heightSpin->value());
+
+    ui->contentWidget->init(
+        ui->rowSpin->value(),
+        ui->columnSpin->value(),
+        ui->widthSpin->value(),
+        ui->heightSpin->value()
+        );
 }
 
 QImagesWidget::~QImagesWidget()

@@ -26,6 +26,7 @@ public:
     void setImages(QList<QImage> images);
 
     void updateMarkers();
+    void init(size_t r, size_t c, size_t w, size_t h);
 signals:
 
 private:

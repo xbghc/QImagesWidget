@@ -80,9 +80,19 @@ void ContentWidget::updateMarkers()
     }
 }
 
+void ContentWidget::init(size_t r, size_t c, size_t w, size_t h)
+{
+    m_rowNum = r;
+    m_colNum = c;
+    m_width = w;
+    m_height = h;
+    updateGrid();
+}
+
 void ContentWidget::updateGrid()
 {
-    auto grid = (QGridLayout *)this->layout();
+    auto grid = qobject_cast<QGridLayout*>(this->layout());
+
     while(grid->count() > 0){
         auto item = grid->takeAt(0);
         if(auto widget = item->widget()){
@@ -91,16 +101,14 @@ void ContentWidget::updateGrid()
         delete item;
     }
 
+
     for(size_t row=0;row<m_rowNum;row++){
         for(size_t col=0;col<m_colNum;col++){
             auto scene = new QGraphicsScene(0, 0, m_width, m_height);
-            auto view = new QGraphicsView(scene);
-
-            // 下面两句可以去除边框，但应该有更好的办法
-            view->setFixedSize(QSize(m_width, m_height));
-            view->setStyleSheet("border: none");
+            auto view = new QGraphicsView(scene, this);
 
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }
     }
+    this->setLayout(grid);
 }
