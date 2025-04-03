@@ -1,5 +1,6 @@
 #include "contentwidget.h"
 
+#include <qgraphicsitem.h>
 #include <qgridlayout.h>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -40,6 +41,7 @@ void ContentWidget::setImages(QList<QImage> images)
 {
     m_images = images;
     m_pageIndex = 0;
+    updateGrid();
     updateMarkers();
 }
 
@@ -74,8 +76,9 @@ void ContentWidget::updateMarkers()
             auto view = qobject_cast<QGraphicsView *>(grid->itemAtPosition(row, col)->widget());
             auto scene = view->scene();
             scene->clear();
-            auto image = m_images[index].scaled(m_width, m_height,Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            scene->addPixmap(QPixmap::fromImage(image));
+            auto image = m_images[index];
+            auto pixmap = scene->addPixmap(QPixmap::fromImage(image));
+            pixmap->setOffset(-scene->width()/2, -scene->height()/2);
         }
     }
 }
@@ -101,11 +104,14 @@ void ContentWidget::updateGrid()
         delete item;
     }
 
-
+    auto sceneWidth = m_images.length()?m_images[0].width():256;
+    auto sceneHeight = m_images.length()?m_images[0].height():256;
     for(size_t row=0;row<m_rowNum;row++){
         for(size_t col=0;col<m_colNum;col++){
-            auto scene = new QGraphicsScene(0, 0, m_width, m_height);
+            // auto scene = new QGraphicsScene(0, 0, sceneWidth, sceneHeight);
+            auto scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
             auto view = new QGraphicsView(scene, this);
+            view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
 
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }

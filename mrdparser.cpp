@@ -176,7 +176,7 @@ MrdData* MrdParser::parseFile(QString fpath)
     return parse(content);
 }
 
-QList<QImage> MrdParser::reconImages(MrdData* mrd, size_t width, size_t height)
+QList<QImage> MrdParser::reconImages(MrdData* mrd)
 {
     size_t noImages;
     size_t n[3];
@@ -218,7 +218,6 @@ QList<QImage> MrdParser::reconImages(MrdData* mrd, size_t width, size_t height)
 
     QList<QImage> images;
     images.reserve(noImages);
-    QSize size(width, height);
     if(mrd->slices == 1){
         // T1
         for(size_t i=0;i<noImages;i++){
@@ -243,9 +242,7 @@ QList<QImage> MrdParser::reconImages(MrdData* mrd, size_t width, size_t height)
                     scanLine[x] = static_cast<uchar>(pixel / max * 255.0);
                 }
             }
-            images.push_back(img.scaled(size,
-                                        Qt::IgnoreAspectRatio,
-                                        Qt::SmoothTransformation));
+            images.push_back(img);
         }
     }else{
         // T2
@@ -271,9 +268,7 @@ QList<QImage> MrdParser::reconImages(MrdData* mrd, size_t width, size_t height)
                     scanLine[x] = static_cast<uchar>(pixel / max * 255.0);
                 }
             }
-            images.push_back(img.scaled(size,
-                                        Qt::IgnoreAspectRatio,
-                                        Qt::SmoothTransformation));
+            images.push_back(img);
         }
     }
 

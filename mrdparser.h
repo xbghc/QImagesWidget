@@ -32,7 +32,7 @@ private:
 public:
     static MrdData* parse(const QByteArray& content);
     static MrdData* parseFile(QString fpath);
-    static QList<QImage> reconImages(MrdData* mrd, size_t width=256, size_t height=256);
+    static QList<QImage> reconImages(MrdData* mrd);
 };
 
 #endif // MRDPARSER_H
