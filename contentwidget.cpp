@@ -45,6 +45,22 @@ void ContentWidget::setImages(QList<QImage> images)
     updateMarkers();
 }
 
+void ContentWidget::addLine(int row, int col, QGraphicsLineItem* line)
+{
+    auto grid = qobject_cast<QGridLayout*>(layout());
+    auto item = grid->itemAtPosition(row, col)->widget();
+    auto scene = qobject_cast<QGraphicsView*>(item)->scene();
+    qDebug() << "height: " << scene->sceneRect();
+    scene->addItem(line);
+}
+
+void ContentWidget::addLine(int index, QGraphicsLineItem* line)
+{
+    int row = index/m_colNum;
+    int col = index%m_colNum;
+    addLine(row, col, line);
+}
+
 size_t ContentWidget::colNum()
 {
     return m_colNum;

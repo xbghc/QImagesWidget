@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QList>
 #include <QWidget>
+#include <QGraphicsItem>
 
 
 class ContentWidget : public QWidget
@@ -23,9 +24,13 @@ public:
     void setWidth(size_t width);
     size_t height();
     void setHeight(size_t height);
+
     void setImages(QList<QImage> images);
 
-    void updateMarkers();
+    void addLine(int row, int col, QGraphicsLineItem* line);
+    void addLine(int index, QGraphicsLineItem* line);
+
+    virtual void updateMarkers();
     void init(size_t r, size_t c, size_t w, size_t h);
 signals:
 
@@ -36,9 +41,10 @@ private:
     size_t m_width=256;
     size_t m_height=256;
 
+    QList<QImage> m_images;
+
     // 功能函数
     void updateGrid();
-    QList<QImage> m_images;
 };
 
 #endif // CONTENTWIDGET_H
