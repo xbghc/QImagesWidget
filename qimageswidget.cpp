@@ -1,135 +1,136 @@
 #include "qimageswidget.h"
-#include "ui_qimageswidget.h"
 
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
+#include <qgraphicsitem.h>
+#include <qgridlayout.h>
+#include <QGraphicsScene>
 #include <QGraphicsView>
 
-#include "mrdparser.h"
-
-namespace {
-QStringList getAllChannelsFile(QString path){
-    QFileInfo fileInfo(path);
-    if(!fileInfo.exists()){
-        qWarning() << "File path does not exist: " << path;
-        return {};
-    }
-
-    auto dir = fileInfo.absoluteDir();
-    auto fileName = fileInfo.fileName();
-
-    static QRegularExpression namePattern("^(.*)#(\\d+)\\.(\\w+)$");
-    QRegularExpressionMatch match = namePattern.match(fileName);
-    if (!match.hasMatch()) {
-        qWarning() << "Invalid file name pattern, expected format: prefix#number.suffix";
-        return {};
-    }
-
-    QString prefix = QRegularExpression::escape(match.captured(1));
-    QString suffix = QRegularExpression::escape(match.captured(3));
-
-    const QStringList files = dir.entryList(QDir::Files | QDir::Readable);
-    auto newPattern = QString("^%1#\\d+\\.%2$").arg(prefix, suffix);
-    auto result = files.filter(QRegularExpression(newPattern));
-    for(auto& fn:result){
-        fn = dir.filePath(fn);
-    }
-    return result;
-}
-
-} // namespace
-
-
 QImagesWidget::QImagesWidget(QWidget *parent)
-    : QWidget(parent), ui(new Ui::QImagesWidget)
+    : QWidget{parent}
 {
-    ui->setupUi(this);
-    ui->ChannelBox->setMinimumWidth(60);
-    ui->ImageBox->setMinimumWidth(80);
-
-    connect(ui->ChannelBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
-    connect(ui->ImageBox, &QCheckComboBox::itemStatusChanged, this, &QImagesWidget::updateMarkers);
-
-    connect(ui->rowSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setRowNum);
-    connect(ui->columnSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setColNum);
-    connect(ui->widthSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setWidth);
-    connect(ui->heightSpin, &QSpinBox::valueChanged, this, &QImagesWidget::setHeight);
-
-
-    ui->contentWidget->init(
-        ui->rowSpin->value(),
-        ui->columnSpin->value(),
-        ui->widthSpin->value(),
-        ui->heightSpin->value()
-        );
+    setLayout(new QGridLayout(this));
 }
 
-QImagesWidget::~QImagesWidget()
+void QImagesWidget::setColNum(size_t cols)
 {
-    delete ui;
+    m_colNum = cols;
+    updateGrid();
+    updateMarkers();
 }
 
-int QImagesWidget::loadMrdFiles(QString fpath)
-{    
-    auto files = getAllChannelsFile(fpath);
-
-    for(const auto& file:files){
-        auto content = MrdParser::parseFile(file);
-        m_channels.emplace_back(MrdParser::reconImages(content));
-
-        // 更新通道列表
-        auto label = file.split("#")[1].split(".")[0];
-        ui->ChannelBox->addItem(label, m_channels.length()-1);
-    }
-
-    // 更新图片列表
-    auto imageNum = m_channels[0].length();
-    for(int i=0;i<imageNum;i++){
-        ui->ImageBox->addItem(QString::number(i+1), i);
-    }
-
-    return files.size();
+void QImagesWidget::setRowNum(size_t lins)
+{
+    m_rowNum = lins;
+    updateGrid();
+    updateMarkers();
 }
 
-void QImagesWidget::clear()
+void QImagesWidget::setWidth(size_t width)
 {
-    m_channels.clear();
+    m_width = width;
+    updateMarkers();
 }
 
-void QImagesWidget::setRowNum(int row)
+void QImagesWidget::setHeight(size_t height)
 {
-    ui->contentWidget->setRowNum(row);
+    m_height = height;
+    updateMarkers();
 }
 
-void QImagesWidget::setColNum(int col)
+void QImagesWidget::setImages(QList<QImage> images)
 {
-    ui->contentWidget->setColNum(col);
+    m_images = images;
+    m_pageIndex = 0;
+    updateGrid();
+    updateMarkers();
 }
 
-void QImagesWidget::setHeight(int height)
+void QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
 {
-    ui->contentWidget->setHeight(height);
+    auto grid = qobject_cast<QGridLayout*>(layout());
+    auto item = grid->itemAtPosition(row, col)->widget();
+    auto scene = qobject_cast<QGraphicsView*>(item)->scene();
+    qDebug() << "height: " << scene->sceneRect();
+    scene->addItem(line);
 }
 
-void QImagesWidget::setWidth(int width)
+void QImagesWidget::addLine(int index, QGraphicsLineItem* line)
 {
-    ui->contentWidget->setWidth(width);
+    int row = index/m_colNum;
+    int col = index%m_colNum;
+    addLine(row, col, line);
+}
+
+size_t QImagesWidget::colNum()
+{
+    return m_colNum;
+}
+
+size_t QImagesWidget::rowNum()
+{
+    return m_rowNum;
 }
 
 void QImagesWidget::updateMarkers()
 {
-    auto checkedChannels = ui->ChannelBox->values(QCheckComboBox::CHECKED);
-    auto checkedImages = ui->ImageBox->values(QCheckComboBox::CHECKED);
 
-    QList<QImage> images;
-    for(int i=0;i<checkedChannels.length();i++){
-        for(int j=0;j<checkedImages.length();j++){
-            auto channelIndex = checkedChannels[i].toInt();
-            auto imageIndex = checkedImages[j].toInt();
-            images.push_back(m_channels[channelIndex][imageIndex]);
+    int size = m_images.size();
+    size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
+    auto grid = qobject_cast<QGridLayout *>(this->layout());
+    if(!grid){
+        qWarning() << "Layout is not a QGridLayout";
+        return;
+    }
+
+    for(int row=0;row<m_rowNum;row++){
+        for(int col=0;col<m_colNum;col++){
+            size_t index = page_offset + row * m_colNum + col;
+            if(index >= size){
+                return;
+            }
+
+            auto view = qobject_cast<QGraphicsView *>(grid->itemAtPosition(row, col)->widget());
+            auto scene = view->scene();
+            scene->clear();
+            auto image = m_images[index];
+            auto pixmap = scene->addPixmap(QPixmap::fromImage(image));
+            pixmap->setOffset(-scene->width()/2, -scene->height()/2);
         }
     }
-    ui->contentWidget->setImages(images);
 }
 
+void QImagesWidget::init(size_t r, size_t c, size_t w, size_t h)
+{
+    m_rowNum = r;
+    m_colNum = c;
+    m_width = w;
+    m_height = h;
+    updateGrid();
+}
+
+void QImagesWidget::updateGrid()
+{
+    auto grid = qobject_cast<QGridLayout*>(this->layout());
+
+    while(grid->count() > 0){
+        auto item = grid->takeAt(0);
+        if(auto widget = item->widget()){
+            delete widget;
+        }
+        delete item;
+    }
+
+    auto sceneWidth = m_images.length()?m_images[0].width():256;
+    auto sceneHeight = m_images.length()?m_images[0].height():256;
+    for(size_t row=0;row<m_rowNum;row++){
+        for(size_t col=0;col<m_colNum;col++){
+            // auto scene = new QGraphicsScene(0, 0, sceneWidth, sceneHeight);
+            auto scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
+            auto view = new QGraphicsView(scene, this);
+            view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
+
+            grid->addWidget(view, row, col, Qt::AlignCenter);
+        }
+    }
+    this->setLayout(grid);
+}
