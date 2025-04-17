@@ -6,6 +6,8 @@
 #include <QList>
 #include <QWidget>
 #include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QPointF>
 
 
 class QImagesWidget : public QWidget
@@ -32,7 +34,17 @@ public:
 
     virtual void updateMarkers();
     void init(size_t r, size_t c, size_t w, size_t h);
+    
+    // Handle mouse click events from graphics views
+    void handleViewMousePress(int row, int col, QPointF scenePos);
+    
 signals:
+    // Signal emitted when user clicks on an image
+    // Parameters:
+    // - row: the row index of the clicked grid cell
+    // - col: the column index of the clicked grid cell
+    // - pos: the relative position of the click within the scene
+    void imageClicked(int row, int col, QPointF pos);
 
 private:
     size_t m_colNum=1;

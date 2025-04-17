@@ -4,6 +4,28 @@
 #include <qgridlayout.h>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QMouseEvent>
+
+// Custom QGraphicsView class to capture mouse events
+class ClickableGraphicsView : public QGraphicsView {
+public:
+    ClickableGraphicsView(QGraphicsScene* scene, QWidget* parent, int row, int col, QImagesWidget* container)
+        : QGraphicsView(scene, parent), m_row(row), m_col(col), m_container(container) {}
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override {
+        QPointF scenePos = mapToScene(event->pos());
+        if (m_container) {
+            m_container->handleViewMousePress(m_row, m_col, scenePos);
+        }
+        QGraphicsView::mousePressEvent(event);
+    }
+
+private:
+    int m_row;
+    int m_col;
+    QImagesWidget* m_container;
+};
 
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
@@ -72,7 +94,6 @@ size_t QImagesWidget::rowNum()
 
 void QImagesWidget::updateMarkers()
 {
-
     int size = m_images.size();
     size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
     auto grid = qobject_cast<QGridLayout *>(this->layout());
@@ -125,11 +146,40 @@ void QImagesWidget::updateGrid()
         for(size_t col=0;col<m_colNum;col++){
             // auto scene = new QGraphicsScene(0, 0, sceneWidth, sceneHeight);
             auto scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
-            auto view = new QGraphicsView(scene, this);
+            
+            // Use the custom ClickableGraphicsView instead of QGraphicsView
+            auto view = new ClickableGraphicsView(scene, this, row, col, this);
             view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
 
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }
     }
     this->setLayout(grid);
+}
+
+void QImagesWidget::handleViewMousePress(int row, int col, QPointF scenePos)
+{
+    // Emit the signal with grid position and scene coordinates
+    emit imageClicked(row, col, scenePos);
+}
+
+size_t QImagesWidget::pageIndex()
+{
+    return m_pageIndex;
+}
+
+void QImagesWidget::setPageIndex(size_t index)
+{
+    m_pageIndex = index;
+    updateMarkers();
+}
+
+size_t QImagesWidget::width()
+{
+    return m_width;
+}
+
+size_t QImagesWidget::height()
+{
+    return m_height;
 }

@@ -1,22 +1,46 @@
 # QImagesWidget
-## 简介
+## Introduction
 
-**QImagesWidget**是项目`mrscan2`的子项目。功能包括：
+**QImagesWidget** is a subproject of the `mrscan2` project. Features include:
 
-- 以多种方式显示多个图片
-- 支持在图片上绘制简单的图形
-- 支持图片的导出
+- Display multiple images in various ways
+- Support drawing simple graphics on images
+- Support image export
+- Support handling mouse click events on images
 
-## 接口
-### addSet(QList<QImage> images, QString setName)
+## Interface
 
-一次扫描，一个线圈接收到的k空间的数据重建得到的图像称为`set`。
+### init(size_t r, size_t c, size_t w, size_t h)
 
-### addLine()
+Initialize the widget with specified rows, columns, width, and height.
 
-### addRect()
+### setImages(QList<QImage> images)
 
-### addCircle()
+Set the images to be displayed. The images will be arranged according to the current layout settings.
+
+### Layout Configuration
+
+- `setRowNum(size_t rows)` / `rowNum()`: Set/get the number of rows
+- `setColNum(size_t cols)` / `colNum()`: Set/get the number of columns
+- `setPageIndex(size_t index)` / `pageIndex()`: Set/get the current page index
+- `setWidth(size_t width)` / `width()`: Set/get the width of each image 
+- `setHeight(size_t height)` / `height()`: Set/get the height of each image
+
+### Adding Graphics
+
+- `addLine(int row, int col, QGraphicsLineItem* line)`: Add a line to the image at specified row and column
+- `addLine(int index, QGraphicsLineItem* line)`: Add a line to the image at specified index
+
+### Updating Display
+
+- `updateMarkers()`: Update the graphics and markers displayed on images
+
+### Signals
+
+- `imageClicked(int row, int col, QPointF pos)`: Emitted when user clicks on an image. 
+  - `row`: The row index of the clicked grid cell
+  - `col`: The column index of the clicked grid cell
+  - `pos`: The relative position of the click within the scene (in scene coordinates)
 
 
 
