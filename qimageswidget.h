@@ -43,7 +43,7 @@ private:
 
     QList<QImage> m_images;
 
-    // 功能函数
+    // Utility functions
     void updateGrid();
 };
 

@@ -50,7 +50,6 @@ void QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
     auto grid = qobject_cast<QGridLayout*>(layout());
     auto item = grid->itemAtPosition(row, col)->widget();
     auto scene = qobject_cast<QGraphicsView*>(item)->scene();
-    qDebug() << "height: " << scene->sceneRect();
     scene->addItem(line);
 }
 
