@@ -71,8 +71,11 @@ void QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
 {
     auto grid = qobject_cast<QGridLayout*>(layout());
     auto item = grid->itemAtPosition(row, col)->widget();
-    auto scene = qobject_cast<QGraphicsView*>(item)->scene();
-    scene->addItem(line);
+    auto view = qobject_cast<QGraphicsView*>(item);
+    if (view && view->scene()) {
+        view->scene()->addItem(line);
+        m_lines.append(line);
+    }
 }
 
 void QImagesWidget::addLine(int index, QGraphicsLineItem* line)
@@ -94,6 +97,8 @@ size_t QImagesWidget::rowNum()
 
 void QImagesWidget::updateMarkers()
 {
+    m_lines.clear();
+    
     int size = m_images.size();
     size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
     auto grid = qobject_cast<QGridLayout *>(this->layout());
@@ -130,6 +135,8 @@ void QImagesWidget::init(size_t r, size_t c, size_t w, size_t h)
 
 void QImagesWidget::updateGrid()
 {
+    m_lines.clear();
+    
     auto grid = qobject_cast<QGridLayout*>(this->layout());
 
     while(grid->count() > 0){
@@ -142,12 +149,10 @@ void QImagesWidget::updateGrid()
 
     auto sceneWidth = m_images.length()?m_images[0].width():256;
     auto sceneHeight = m_images.length()?m_images[0].height():256;
+    
     for(size_t row=0;row<m_rowNum;row++){
         for(size_t col=0;col<m_colNum;col++){
-            // auto scene = new QGraphicsScene(0, 0, sceneWidth, sceneHeight);
             auto scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
-            
-            // Use the custom ClickableGraphicsView instead of QGraphicsView
             auto view = new ClickableGraphicsView(scene, this, row, col, this);
             view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
 

@@ -8,7 +8,8 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QPointF>
-
+#include <QVector>
+#include <memory>
 
 class QImagesWidget : public QWidget
 {
@@ -54,6 +55,8 @@ private:
     size_t m_height=256;
 
     QList<QImage> m_images;
+    
+    QVector<QGraphicsLineItem*> m_lines;
 
     // Utility functions
     void updateGrid();
