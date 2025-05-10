@@ -1,4 +1,5 @@
 #include "qimageswidget.h"
+#include "utils.h"
 
 #include <qgraphicsitem.h>
 #include <qgridlayout.h>
@@ -6,26 +7,6 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
-// Custom QGraphicsView class to capture mouse events
-class ClickableGraphicsView : public QGraphicsView {
-public:
-    ClickableGraphicsView(QGraphicsScene* scene, QWidget* parent, int row, int col, QImagesWidget* container)
-        : QGraphicsView(scene, parent), m_row(row), m_col(col), m_container(container) {}
-
-protected:
-    void mousePressEvent(QMouseEvent* event) override {
-        QPointF scenePos = mapToScene(event->pos());
-        if (m_container) {
-            m_container->handleViewMousePress(m_row, m_col, scenePos);
-        }
-        QGraphicsView::mousePressEvent(event);
-    }
-
-private:
-    int m_row;
-    int m_col;
-    QImagesWidget* m_container;
-};
 
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
@@ -137,12 +118,12 @@ void QImagesWidget::updateGrid()
 {
     m_lines.clear();
     
-    auto grid = qobject_cast<QGridLayout*>(this->layout());
+    auto grid = this->gridLayout();
 
     while(grid->count() > 0){
         auto item = grid->takeAt(0);
         if(auto widget = item->widget()){
-            delete widget;
+            widget->deleteLater();
         }
         delete item;
     }
@@ -153,8 +134,9 @@ void QImagesWidget::updateGrid()
     for(size_t row=0;row<m_rowNum;row++){
         for(size_t col=0;col<m_colNum;col++){
             auto scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
-            auto view = new ClickableGraphicsView(scene, this, row, col, this);
+            auto view = new QGraphicsView(scene, this);
             view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
+            view->installEventFilter(this);
 
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }
@@ -162,10 +144,48 @@ void QImagesWidget::updateGrid()
     this->setLayout(grid);
 }
 
-void QImagesWidget::handleViewMousePress(int row, int col, QPointF scenePos)
+std::pair<int, int> QImagesWidget::getViewPos(QGraphicsView *view) const
 {
-    // Emit the signal with grid position and scene coordinates
-    emit imageClicked(row, col, scenePos);
+    auto grid = this->gridLayout();
+
+    for(int row=0;row<grid->rowCount();row++){
+        for(int col=0;col<grid->columnCount();col++){
+            auto item = grid->itemAtPosition(row, col);
+            if(item && item->widget() == view){
+                return {row, col};
+            }
+        }
+    }
+
+    LOG_ERROR("QGraphicsView not found in QImagesWidget's layout");
+    throw std::runtime_error("QGraphicsView not found in QImagesWidget's layout");
+}
+
+bool QImagesWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    auto view = qobject_cast<QGraphicsView*>(obj);
+    if(!view){
+        return false;
+    }
+
+    auto [row, col] = getViewPos(view);
+    return viewEventFilter(row, col, event);
+}
+
+bool QImagesWidget::viewEventFilter(int row, int col, QEvent *event)
+{
+    return false;
+}
+
+QGridLayout *QImagesWidget::gridLayout() const
+{
+    auto currentlayout = this->layout();
+    auto grid=qobject_cast<QGridLayout*>(currentlayout);
+    if(!grid){
+        LOG_ERROR("Layout is not a QGridLayout");
+        throw std::runtime_error("Layout is not a QGridLayout in QImagesWidget::getViewPos");
+    }
+    return grid;
 }
 
 size_t QImagesWidget::pageIndex()
