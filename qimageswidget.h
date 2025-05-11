@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QPointF>
 #include <QVector>
 
@@ -38,8 +39,7 @@ public:
 signals:
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
-    virtual bool viewEventFilter(int row, int col, QEvent *event);
+    std::pair<int, int> viewPosition(QGraphicsView* view) const;
 
 private:
     size_t m_colNum=1;
@@ -55,9 +55,6 @@ private:
     // Utility functions
     QGridLayout* gridLayout() const;
     void updateGrid();
-
-    std::pair<int, int> getViewPos(QGraphicsView* view) const;
-
 };
 
 #endif // QIMAGESWIDGET_H

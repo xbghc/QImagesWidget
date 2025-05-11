@@ -5,7 +5,6 @@
 #include <qgridlayout.h>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QMouseEvent>
 
 
 QImagesWidget::QImagesWidget(QWidget *parent)
@@ -144,7 +143,7 @@ void QImagesWidget::updateGrid()
     this->setLayout(grid);
 }
 
-std::pair<int, int> QImagesWidget::getViewPos(QGraphicsView *view) const
+std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
 {
     auto grid = this->gridLayout();
 
@@ -159,22 +158,6 @@ std::pair<int, int> QImagesWidget::getViewPos(QGraphicsView *view) const
 
     LOG_ERROR("QGraphicsView not found in QImagesWidget's layout");
     throw std::runtime_error("QGraphicsView not found in QImagesWidget's layout");
-}
-
-bool QImagesWidget::eventFilter(QObject *obj, QEvent *event)
-{
-    auto view = qobject_cast<QGraphicsView*>(obj);
-    if(!view){
-        return false;
-    }
-
-    auto [row, col] = getViewPos(view);
-    return viewEventFilter(row, col, event);
-}
-
-bool QImagesWidget::viewEventFilter(int row, int col, QEvent *event)
-{
-    return false;
 }
 
 QGridLayout *QImagesWidget::gridLayout() const
