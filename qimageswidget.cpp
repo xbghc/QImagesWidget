@@ -49,9 +49,7 @@ void QImagesWidget::setImages(QList<QImage> images)
 
 void QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
 {
-    auto grid = qobject_cast<QGridLayout*>(layout());
-    auto item = grid->itemAtPosition(row, col)->widget();
-    auto view = qobject_cast<QGraphicsView*>(item);
+    auto view = this->view(row, col);
     if (view && view->scene()) {
         view->scene()->addItem(line);
         m_lines.append(line);
@@ -63,6 +61,21 @@ void QImagesWidget::addLine(int index, QGraphicsLineItem* line)
     int row = index/m_colNum;
     int col = index%m_colNum;
     addLine(row, col, line);
+}
+
+const QGraphicsView *QImagesWidget::view(int row, int col) const
+{
+    auto grid = gridLayout();
+    if(!grid){
+        return nullptr;
+    }
+
+    auto item = grid->itemAtPosition(row, col);
+    if(!item){
+        return nullptr;
+    }
+
+    return qobject_cast<QGraphicsView *>(item->widget());
 }
 
 size_t QImagesWidget::colNum()
@@ -81,12 +94,6 @@ void QImagesWidget::updateMarkers()
     
     int size = m_images.size();
     size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
-    auto grid = qobject_cast<QGridLayout *>(this->layout());
-    if(!grid){
-        qWarning() << "Layout is not a QGridLayout";
-        return;
-    }
-
     for(int row=0;row<m_rowNum;row++){
         for(int col=0;col<m_colNum;col++){
             size_t index = page_offset + row * m_colNum + col;
@@ -94,7 +101,7 @@ void QImagesWidget::updateMarkers()
                 return;
             }
 
-            auto view = qobject_cast<QGraphicsView *>(grid->itemAtPosition(row, col)->widget());
+            auto view = this->view(row, col);
             auto scene = view->scene();
             scene->clear();
             auto image = m_images[index];
@@ -152,8 +159,7 @@ std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
 
     for(int row=0;row<grid->rowCount();row++){
         for(int col=0;col<grid->columnCount();col++){
-            auto item = grid->itemAtPosition(row, col);
-            if(item && item->widget() == view){
+            if(this->view(row, col) == view){
                 return {row, col};
             }
         }

@@ -33,6 +33,8 @@ public:
     void addLine(int row, int col, QGraphicsLineItem* line);
     void addLine(int index, QGraphicsLineItem* line);
 
+    const QGraphicsView* view(int row, int col) const;
+
     virtual void updateMarkers();
     void init(size_t r, size_t c, size_t w, size_t h);
 
