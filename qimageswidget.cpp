@@ -143,6 +143,9 @@ void QImagesWidget::updateGrid()
     this->setLayout(grid);
 }
 
+/**
+ * @brief 返回view的行和列，如果返回-1,-1表示找不到view
+ */
 std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
 {
     auto grid = this->gridLayout();
@@ -156,8 +159,7 @@ std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
         }
     }
 
-    LOG_ERROR("QGraphicsView not found in QImagesWidget's layout");
-    throw std::runtime_error("QGraphicsView not found in QImagesWidget's layout");
+    return {-1, -1};
 }
 
 QGridLayout *QImagesWidget::gridLayout() const
