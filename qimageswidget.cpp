@@ -290,21 +290,11 @@ void QImagesWidget::updateGrid()
     if (!grid) {
         return;
     }
-
-    // 保存现有视图和场景
-    QVector<QGraphicsView*> existingViews;
-    QVector<QGraphicsScene*> existingScenes;
     
     while (grid->count() > 0) {
         auto item = grid->takeAt(0);
         if (auto widget = item->widget()) {
-            if (auto view = qobject_cast<QGraphicsView*>(widget)) {
-                existingViews.append(view);
-                existingScenes.append(view->scene());
-                view->setParent(nullptr); // 从布局中分离但不删除
-            } else {
-                delete widget;
-            }
+            widget->deleteLater();
         }
         delete item;
     }
@@ -318,30 +308,14 @@ void QImagesWidget::updateGrid()
         for (size_t col = 0; col < m_colNum; col++) {
             QGraphicsView* view = nullptr;
             QGraphicsScene* scene = nullptr;
-            
-            // 尝试重用现有视图和场景
-            if (viewIndex < existingViews.size()) {
-                view = existingViews[viewIndex];
-                scene = existingScenes[viewIndex];
-                viewIndex++;
-            } else {
-                // 如果没有可重用的，创建新的
-                scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
-                view = new QGraphicsView(scene, this);
-                view->installEventFilter(this);
-                view->setMouseTracking(true);
-            }
-            
-            view->setParent(this);
+
+            scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
+            view = new QGraphicsView(scene, this);
+            view->installEventFilter(this);
+
             view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }
-    }
-    
-    // 删除未使用的视图和场景
-    for (size_t i = viewIndex; i < existingViews.size(); i++) {
-        delete existingScenes[i];
-        delete existingViews[i];
     }
 }
 
