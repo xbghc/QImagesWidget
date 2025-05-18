@@ -11,7 +11,6 @@
 #include <QPointF>
 #include <QVector>
 #include <QEvent>
-#include <memory>
 
 /**
  * @brief 图像网格控件
@@ -180,32 +179,23 @@ signals:
      * @brief 图像网格配置改变信号
      */
     void gridConfigChanged();
-    
-    /**
-     * @brief 通用视图事件信号
-     * 任何视图上的事件都会通过此信号发出
-     * @param view 产生事件的视图
-     * @param event 事件对象
-     * @param row 行索引
-     * @param col 列索引
-     */
-    void viewEvent(QGraphicsView* view, QEvent* event, int row, int col);
 
 protected:
-    /**
-     * @brief 事件过滤器实现
-     * @param watched 被监视对象
-     * @param event 事件对象
-     * @return 是否处理了事件
-     */
-    bool eventFilter(QObject *watched, QEvent *event) override;
-    
     /**
      * @brief 获取视图的位置
      * @param view 视图对象
      * @return 行列位置对
      */
     std::pair<int, int> viewPosition(QGraphicsView* view) const;
+
+    /**
+     * @brief 获取视图窗口的位置
+     * @param view 视图窗口对象
+     * @return 行列位置对
+     */
+    std::pair<int, int> viewPortPosition(QWidget* view) const;
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     size_t m_colNum = 1;

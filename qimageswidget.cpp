@@ -12,6 +12,9 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
 {
     setLayout(new QGridLayout(this));
+
+    setMouseTracking(true);
+
 }
 
 QImagesWidget::~QImagesWidget() {
@@ -261,6 +264,33 @@ std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
     return {-1, -1};
 }
 
+std::pair<int, int> QImagesWidget::viewPortPosition(QWidget *viewport) const
+{
+    if (!viewport) {
+        return {-1, -1};
+    }
+
+    auto grid = this->gridLayout();
+    if (!grid) {
+        return {-1, -1};
+    }
+
+    for (int row = 0; row < grid->rowCount(); row++) {
+        for (int col = 0; col < grid->columnCount(); col++) {
+            if (this->view(row, col)->viewport() == viewport) {
+                return {row, col};
+            }
+        }
+    }
+
+    return {-1, -1};
+}
+
+bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    return QWidget::eventFilter(watched, event);
+}
+
 QGridLayout *QImagesWidget::gridLayout() const
 {
     auto currentlayout = this->layout();
@@ -311,7 +341,7 @@ void QImagesWidget::updateGrid()
 
             scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
             view = new QGraphicsView(scene, this);
-            view->installEventFilter(this);
+            view->viewport()->installEventFilter(this);
 
             view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
             grid->addWidget(view, row, col, Qt::AlignCenter);
@@ -323,24 +353,6 @@ bool QImagesWidget::isValidIndex(int row, int col) const
 {
     return (row >= 0 && row < static_cast<int>(m_rowNum) && 
             col >= 0 && col < static_cast<int>(m_colNum));
-}
-
-bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
-{
-    if (auto view = qobject_cast<QGraphicsView*>(watched)) {
-        auto pos = viewPosition(view);
-        if (pos.first < 0 || pos.second < 0) {
-            return QWidget::eventFilter(watched, event);
-        }
-        
-        int row = pos.first;
-        int col = pos.second;
-
-        emit viewEvent(view, event, row, col);
-    }
-    
-    // 不拦截事件，继续传递
-    return QWidget::eventFilter(watched, event);
 }
 
 const QGraphicsScene* QImagesWidget::scene(int row, int col) const
