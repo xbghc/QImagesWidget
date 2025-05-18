@@ -205,8 +205,6 @@ private:
     size_t m_height = 128;
 
     QList<QImage> m_images;
-    
-    QVector<QGraphicsLineItem*> m_lines;
 
     // Utility functions
     /**
@@ -220,11 +218,6 @@ private:
      */
     void updateGrid();
 
-    /**
-     * @brief 清除所有线条
-     */
-    void clearLines();
-    
     /**
      * @brief 检查索引是否有效
      * @param row 行索引

@@ -18,8 +18,6 @@ QImagesWidget::QImagesWidget(QWidget *parent)
 }
 
 QImagesWidget::~QImagesWidget() {
-    clearLines();
-    
     auto grid = gridLayout();
     if (grid) {
         while (grid->count() > 0) {
@@ -35,13 +33,6 @@ QImagesWidget::~QImagesWidget() {
     }
 }
 
-void QImagesWidget::clearLines()
-{
-    for (auto line : m_lines) {
-        delete line;
-    }
-    m_lines.clear();
-}
 
 void QImagesWidget::setColNum(size_t cols)
 {
@@ -107,7 +98,6 @@ bool QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
     auto view = this->view(row, col);
     if (view && view->scene()) {
         view->scene()->addItem(line);
-        m_lines.append(line);
         return true;
     }
     return false;
@@ -184,8 +174,6 @@ size_t QImagesWidget::height() const
 
 void QImagesWidget::updateMarkers()
 {
-    clearLines();
-
     if (m_images.isEmpty()) {
         return;
     }
@@ -314,8 +302,6 @@ size_t QImagesWidget::pageCount() const
 
 void QImagesWidget::updateGrid()
 {
-    clearLines();
-    
     auto grid = this->gridLayout();
     if (!grid) {
         return;
