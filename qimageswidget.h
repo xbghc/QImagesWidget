@@ -74,25 +74,49 @@ public:
      * @brief 获取图像宽度
      * @return 图像宽度
      */
-    size_t width() const;
+    size_t viewWidth() const;
     
     /**
      * @brief 设置图像宽度
      * @param width 宽度
      */
-    void setWidth(size_t width);
+    void setViewWidth(size_t width);
 
     /**
      * @brief 获取图像高度
      * @return 图像高度
      */
-    size_t height() const;
+    size_t viewHeight() const;
     
     /**
      * @brief 设置图像高度
      * @param height 高度
      */
-    void setHeight(size_t height);
+    void setViewHeight(size_t height);
+
+    /**
+     * @brief 获取场景宽度
+     * @return 场景宽度
+     */
+    size_t sceneWidth() const;
+
+    /**
+     * @brief 获取场景高度
+     * @return 场景高度
+     */
+    size_t sceneHeight() const;
+
+    /**
+     * @brief 设置场景宽度
+     * @param width 宽度
+     */
+    void setSceneWidth(size_t width);
+
+    /**
+     * @brief 设置场景高度
+     * @param height 高度
+     */
+    void setSceneHeight(size_t height);
 
     /**
      * @brief 设置图片列表
@@ -151,8 +175,26 @@ public:
      * @param col 列索引
      * @return 对应位置的场景对象
      */
-    const QGraphicsScene* scene(int row, int col) const;
-    
+    QGraphicsScene* scene(int row, int col) const;
+
+    /**
+     * @brief 获取指定位置的场景偏移量
+     * @param row 行索引
+     * @param col 列索引
+     * @return 对应位置的场景偏移量
+     */
+    QPair<double, double> sceneOffset(int row, int col) const; 
+
+    /**
+     * @brief 设置指定位置的场景矩形，同时图片也会随之移动
+     * @param row 行索引
+     * @param col 列索引
+     * @param left 左边界
+     * @param top 上边界
+     * @param width 宽度
+     * @param height 高度
+     */
+    void setSceneOffset(int row, int col, double hOffset, double vOffset);
     /**
      * @brief 获取指定索引位置的图像
      * @param index 线性索引
@@ -201,10 +243,18 @@ private:
     size_t m_colNum = 1;
     size_t m_rowNum = 1;
     size_t m_pageIndex = 0;
-    size_t m_width = 128;
-    size_t m_height = 128;
+    size_t m_viewWidth = 256;
+    size_t m_viewHeight = 256;
+    size_t m_sceneWidth = 256;
+    size_t m_sceneHeight = 256;
 
     QList<QImage> m_images;
+
+    /**
+     * @brief 场景偏移量
+     * @details 用于记录每个场景的偏移量
+     */
+    QVector<QPair<double, double>> m_scenesOffsets;
 
     // Utility functions
     /**

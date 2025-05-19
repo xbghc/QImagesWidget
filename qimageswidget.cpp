@@ -14,7 +14,6 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     setLayout(new QGridLayout(this));
 
     setMouseTracking(true);
-
 }
 
 QImagesWidget::~QImagesWidget() {
@@ -54,28 +53,6 @@ void QImagesWidget::setRowNum(size_t rows)
     
     m_rowNum = rows;
     updateGrid();
-    updateMarkers();
-    emit gridConfigChanged();
-}
-
-void QImagesWidget::setWidth(size_t width)
-{
-    if (m_width == width || width <= 0) {
-        return;
-    }
-    
-    m_width = width;
-    updateMarkers();
-    emit gridConfigChanged();
-}
-
-void QImagesWidget::setHeight(size_t height)
-{
-    if (m_height == height || height <= 0) {
-        return;
-    }
-    
-    m_height = height;
     updateMarkers();
     emit gridConfigChanged();
 }
@@ -162,14 +139,68 @@ bool QImagesWidget::setPageIndex(size_t index)
     return true;
 }
 
-size_t QImagesWidget::width() const
+size_t QImagesWidget::viewWidth() const
 {
-    return m_width;
+    return m_viewWidth;
 }
 
-size_t QImagesWidget::height() const
+size_t QImagesWidget::viewHeight() const
 {
-    return m_height;
+    return m_viewHeight;
+}
+
+size_t QImagesWidget::sceneWidth() const
+{
+    return m_sceneWidth;
+}
+
+size_t QImagesWidget::sceneHeight() const
+{
+    return m_sceneHeight;
+}
+
+void QImagesWidget::setViewWidth(size_t width)
+{
+    if (m_viewWidth == width || width <= 0) {
+        return;
+    }
+    
+    m_viewWidth = width;
+    updateGrid();
+    updateMarkers();
+}
+
+void QImagesWidget::setViewHeight(size_t height)
+{
+    if (m_viewHeight == height || height <= 0) {
+        return;
+    }
+    
+    m_viewHeight = height;
+    updateGrid();
+    updateMarkers();
+}
+
+void QImagesWidget::setSceneWidth(size_t width)
+{
+    if (m_sceneWidth == width || width <= 0) {
+        return;
+    }
+    
+    m_sceneWidth = width;
+    updateGrid();
+    updateMarkers();
+}
+
+void QImagesWidget::setSceneHeight(size_t height)
+{
+    if (m_sceneHeight == height || height <= 0) {
+        return;
+    }
+    
+    m_sceneHeight = height;
+    updateGrid();
+    updateMarkers();
 }
 
 void QImagesWidget::updateMarkers()
@@ -194,8 +225,11 @@ void QImagesWidget::updateMarkers()
             auto scene = view->scene();
             scene->clear();
             auto image = m_images[index];
+            image = image.scaled(m_sceneWidth, m_sceneHeight, Qt::IgnoreAspectRatio);
             auto pixmap = scene->addPixmap(QPixmap::fromImage(image));
-            pixmap->setOffset(-scene->width()/2, -scene->height()/2);
+            
+            auto [hOffset, vOffset] = sceneOffset(row, col);
+            pixmap->setOffset(hOffset, vOffset);
         }
     }
 }
@@ -214,13 +248,13 @@ void QImagesWidget::init(size_t rows, size_t cols, size_t width, size_t height)
         changed = true;
     }
     
-    if (m_width != width && width > 0) {
-        m_width = width;
+    if (m_viewWidth != width && width > 0) {
+        m_viewWidth = width;
         changed = true;
     }
     
-    if (m_height != height && height > 0) {
-        m_height = height;
+    if (m_viewHeight != height && height > 0) {
+        m_viewHeight = height;
         changed = true;
     }
     
@@ -314,9 +348,6 @@ void QImagesWidget::updateGrid()
         }
         delete item;
     }
-
-    auto sceneWidth = m_images.isEmpty() ? 256 : m_images[0].width();
-    auto sceneHeight = m_images.isEmpty() ? 256 : m_images[0].height();
     
     size_t viewIndex = 0;
     
@@ -325,11 +356,11 @@ void QImagesWidget::updateGrid()
             QGraphicsView* view = nullptr;
             QGraphicsScene* scene = nullptr;
 
-            scene = new QGraphicsScene(-sceneWidth/2, -sceneHeight/2, sceneWidth, sceneHeight);
+            auto [hOffset, vOffset] = sceneOffset(row, col);
+            scene = new QGraphicsScene(hOffset, vOffset, m_sceneWidth, m_sceneHeight);
             view = new QGraphicsView(scene, this);
+            view->setFixedSize(m_viewWidth, m_viewHeight);
             view->viewport()->installEventFilter(this);
-
-            view->scale(static_cast<double>(m_width)/sceneWidth, static_cast<double>(m_height)/sceneHeight);
             grid->addWidget(view, row, col, Qt::AlignCenter);
         }
     }
@@ -341,10 +372,33 @@ bool QImagesWidget::isValidIndex(int row, int col) const
             col >= 0 && col < static_cast<int>(m_colNum));
 }
 
-const QGraphicsScene* QImagesWidget::scene(int row, int col) const
+QGraphicsScene* QImagesWidget::scene(int row, int col) const
 {
     auto v = view(row, col);
     return v ? v->scene() : nullptr;
+}
+
+QPair<double, double> QImagesWidget::sceneOffset(int row, int col) const
+{
+    if (!isValidIndex(row, col) || m_scenesOffsets.size() <= row * m_colNum + col) {
+        return qMakePair(0.0, 0.0);
+    }
+    return m_scenesOffsets[row * m_colNum + col];
+}
+
+void QImagesWidget::setSceneOffset(int row, int col, double hOffset, double vOffset)
+{
+    if (!isValidIndex(row, col)) {
+        return;
+    }
+
+    if (m_scenesOffsets.size() <= row * m_colNum + col) {
+        m_scenesOffsets.resize(row * m_colNum + col + 1);
+    }
+
+    m_scenesOffsets[row * m_colNum + col] = qMakePair(hOffset, vOffset);
+    updateGrid();
+    updateMarkers();
 }
 
 const QImage& QImagesWidget::imageAt(size_t index) const
