@@ -155,15 +155,6 @@ public:
     virtual void updateMarkers();
 
     /**
-     * @brief 初始化控件
-     * @param rows 行数
-     * @param cols 列数
-     * @param width 宽度
-     * @param height 高度
-     */
-    void init(size_t rows, size_t cols, size_t width, size_t height);
-
-    /**
      * @brief 获取总页数
      * @return 总页数
      */
@@ -265,7 +256,7 @@ private:
     
     /**
      * @brief 更新网格布局
-     */
+     */  
     void updateGrid();
 
     /**

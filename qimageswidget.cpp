@@ -32,7 +32,6 @@ QImagesWidget::~QImagesWidget() {
     }
 }
 
-
 void QImagesWidget::setColNum(size_t cols)
 {
     if (m_colNum == cols || cols <= 0) {
@@ -165,7 +164,14 @@ void QImagesWidget::setViewWidth(size_t width)
         return;
     }
     
-    m_viewWidth = width;
+    auto grid = gridLayout();
+    if (!grid) {
+        return;
+    }
+
+    auto [maxWidth, maxHeight] = grid->cellRect(0, 0).size();
+
+    m_viewWidth = width > maxWidth ? maxWidth : width;
     updateGrid();
     updateMarkers();
 }
@@ -176,7 +182,15 @@ void QImagesWidget::setViewHeight(size_t height)
         return;
     }
     
-    m_viewHeight = height;
+    auto grid = gridLayout();
+    if (!grid) {
+        return;
+    }
+
+    auto [maxWidth, maxHeight] = grid->cellRect(0, 0).size();
+
+
+    m_viewHeight = height > maxHeight ? maxHeight : height;
     updateGrid();
     updateMarkers();
 }
@@ -231,36 +245,6 @@ void QImagesWidget::updateMarkers()
             auto [hOffset, vOffset] = sceneOffset(row, col);
             pixmap->setOffset(hOffset, vOffset);
         }
-    }
-}
-
-void QImagesWidget::init(size_t rows, size_t cols, size_t width, size_t height)
-{
-    bool changed = false;
-    
-    if (m_rowNum != rows && rows > 0) {
-        m_rowNum = rows;
-        changed = true;
-    }
-    
-    if (m_colNum != cols && cols > 0) {
-        m_colNum = cols;
-        changed = true;
-    }
-    
-    if (m_viewWidth != width && width > 0) {
-        m_viewWidth = width;
-        changed = true;
-    }
-    
-    if (m_viewHeight != height && height > 0) {
-        m_viewHeight = height;
-        changed = true;
-    }
-    
-    if (changed) {
-        updateGrid();
-        emit gridConfigChanged();
     }
 }
 
