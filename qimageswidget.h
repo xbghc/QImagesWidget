@@ -11,6 +11,7 @@
 #include <QPointF>
 #include <QVector>
 #include <QEvent>
+#include <QScrollArea>
 
 /**
  * @brief 图像网格控件
@@ -235,6 +236,8 @@ protected:
 
     bool eventFilter(QObject *watched, QEvent *event) override;
 
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     size_t m_colNum = 1;
     size_t m_rowNum = 1;
@@ -253,6 +256,11 @@ private:
      */
     QVector<QPair<double, double>> m_scenesOffsets;
 
+    // New members for scroll area
+    QScrollArea* m_scrollArea;
+    QWidget* m_contentWidget;
+    QGridLayout* m_grid; // The actual grid layout, on m_contentWidget
+
     // Utility functions
     /**
      * @brief 获取网格布局
@@ -268,6 +276,8 @@ private:
      * @return 索引是否有效
      */
     bool isValidIndex(int row, int col) const;
+
+    void setupLayout();
 };
 
 #endif // QIMAGESWIDGET_H
