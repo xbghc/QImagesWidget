@@ -201,17 +201,22 @@ public:
      */
     const QImage& imageAt(int row, int col) const;
 
-signals:
     /**
-     * @brief 当前页改变信号
-     * @param index 新的页索引
+     * @brief 获取更新启用状态
+     * @return 是否启用更新
      */
-    void pageChanged(size_t index);
-    
+    bool isUpdateEnabled() const;
+
     /**
-     * @brief 图像网格配置改变信号
+     * @brief 设置更新启用状态
+     * @param enable 是否启用更新
      */
-    void gridConfigChanged();
+    void setUpdateEnabled(bool enable);
+
+    /**
+     * @brief 更新网格布局
+     */
+    void updateGrid();
 
 protected:
     /**
@@ -238,6 +243,7 @@ private:
     size_t m_viewHeight = 256;
     size_t m_sceneWidth = 256;
     size_t m_sceneHeight = 256;
+    bool m_enableUpdate = true;
 
     QList<QImage> m_images;
 
@@ -254,10 +260,6 @@ private:
      */
     QGridLayout* gridLayout() const;
     
-    /**
-     * @brief 更新网格布局
-     */  
-    void updateGrid();
 
     /**
      * @brief 检查索引是否有效

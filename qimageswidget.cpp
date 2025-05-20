@@ -41,7 +41,6 @@ void QImagesWidget::setColNum(size_t cols)
     m_colNum = cols;
     updateGrid();
     updateMarkers();
-    emit gridConfigChanged();
 }
 
 void QImagesWidget::setRowNum(size_t rows)
@@ -53,7 +52,6 @@ void QImagesWidget::setRowNum(size_t rows)
     m_rowNum = rows;
     updateGrid();
     updateMarkers();
-    emit gridConfigChanged();
 }
 
 void QImagesWidget::setImages(const QList<QImage>& images)
@@ -62,7 +60,6 @@ void QImagesWidget::setImages(const QList<QImage>& images)
     m_pageIndex = 0;
     updateGrid();
     updateMarkers();
-    emit pageChanged(m_pageIndex);
 }
 
 bool QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
@@ -133,7 +130,6 @@ bool QImagesWidget::setPageIndex(size_t index)
     if (m_pageIndex != index) {
         m_pageIndex = index;
         updateMarkers();
-        emit pageChanged(index);
     }
     return true;
 }
@@ -164,14 +160,7 @@ void QImagesWidget::setViewWidth(size_t width)
         return;
     }
     
-    auto grid = gridLayout();
-    if (!grid) {
-        return;
-    }
-
-    auto [maxWidth, maxHeight] = grid->cellRect(0, 0).size();
-
-    m_viewWidth = width > maxWidth ? maxWidth : width;
+    m_viewWidth = width;
     updateGrid();
     updateMarkers();
 }
@@ -182,15 +171,7 @@ void QImagesWidget::setViewHeight(size_t height)
         return;
     }
     
-    auto grid = gridLayout();
-    if (!grid) {
-        return;
-    }
-
-    auto [maxWidth, maxHeight] = grid->cellRect(0, 0).size();
-
-
-    m_viewHeight = height > maxHeight ? maxHeight : height;
+    m_viewHeight = height;
     updateGrid();
     updateMarkers();
 }
@@ -217,9 +198,19 @@ void QImagesWidget::setSceneHeight(size_t height)
     updateMarkers();
 }
 
+bool QImagesWidget::isUpdateEnabled() const
+{
+    return m_enableUpdate;
+}
+
+void QImagesWidget::setUpdateEnabled(bool enable)
+{
+    m_enableUpdate = enable;
+}
+
 void QImagesWidget::updateMarkers()
 {
-    if (m_images.isEmpty()) {
+    if (!m_enableUpdate || m_images.isEmpty()) {
         return;
     }
 
@@ -320,14 +311,14 @@ size_t QImagesWidget::pageCount() const
 
 void QImagesWidget::updateGrid()
 {
-    auto grid = this->gridLayout();
-    if (!grid) {
+    if (!m_enableUpdate) {
         return;
     }
     
-    while (grid->count() > 0) {
-        auto item = grid->takeAt(0);
-        if (auto widget = item->widget()) {
+    auto grid = this->gridLayout();
+    
+    while (QLayoutItem* item = grid->takeAt(0)) {
+        if (QWidget* widget = item->widget()) {
             widget->deleteLater();
         }
         delete item;
