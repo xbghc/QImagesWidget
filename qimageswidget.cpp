@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 
 
+// Constructor & Destructor
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
     , m_scrollArea(nullptr)
@@ -18,29 +19,6 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     setupLayout();
 }
 
-void QImagesWidget::setupLayout()
-{
-    auto mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    setLayout(mainLayout);
-
-    m_scrollArea = new QScrollArea(this);
-    m_scrollArea->setWidgetResizable(true);
-    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    m_scrollArea->setAlignment(Qt::AlignCenter);
-
-    m_contentWidget = new QWidget(m_scrollArea);
-
-    m_grid = new QGridLayout(m_contentWidget);
-    m_grid->setSpacing(1);
-    m_grid->setContentsMargins(0, 0, 0, 0);
-
-    m_scrollArea->setWidget(m_contentWidget);
-
-    mainLayout->addWidget(m_scrollArea);
-}
-
 QImagesWidget::~QImagesWidget() {
     // Qt's parent-child ownership handles deletion of m_scrollArea,
     // m_contentWidget, and m_grid (as m_contentWidget's layout).
@@ -48,6 +26,12 @@ QImagesWidget::~QImagesWidget() {
     // If QGraphicsScene instances are children of their respective QGraphicsView instances (as per the updated updateGrid),
     // then they will be automatically deleted when their parent view is deleted.
     // No explicit cleanup of scenes is needed here or in updateGrid if that parentage is set.
+}
+
+// Public Getters & Setters
+size_t QImagesWidget::colNum() const
+{
+    return m_colNum;
 }
 
 void QImagesWidget::setColNum(size_t cols)
@@ -61,6 +45,11 @@ void QImagesWidget::setColNum(size_t cols)
     updateMarkers();
 }
 
+size_t QImagesWidget::rowNum() const
+{
+    return m_rowNum;
+}
+
 void QImagesWidget::setRowNum(size_t rows)
 {
     if (m_rowNum == rows || rows <= 0) {
@@ -68,6 +57,88 @@ void QImagesWidget::setRowNum(size_t rows)
     }
     
     m_rowNum = rows;
+    updateGrid();
+    updateMarkers();
+}
+
+size_t QImagesWidget::pageIndex() const
+{
+    return m_pageIndex;
+}
+
+bool QImagesWidget::setPageIndex(size_t index)
+{
+    if (index >= pageCount()) {
+        return false;
+    }
+    
+    if (m_pageIndex != index) {
+        m_pageIndex = index;
+        updateMarkers();
+    }
+    return true;
+}
+
+size_t QImagesWidget::viewWidth() const
+{
+    return m_viewWidth;
+}
+
+void QImagesWidget::setViewWidth(size_t width)
+{
+    if (m_viewWidth == width || width <= 0) {
+        return;
+    }
+    
+    m_viewWidth = width;
+    updateGrid();
+    updateMarkers();
+}
+
+size_t QImagesWidget::viewHeight() const
+{
+    return m_viewHeight;
+}
+
+void QImagesWidget::setViewHeight(size_t height)
+{
+    if (m_viewHeight == height || height <= 0) {
+        return;
+    }
+    
+    m_viewHeight = height;
+    updateGrid();
+    updateMarkers();
+}
+
+size_t QImagesWidget::sceneWidth() const
+{
+    return m_sceneWidth;
+}
+
+void QImagesWidget::setSceneWidth(size_t width)
+{
+    if (m_sceneWidth == width || width <= 0) {
+        return;
+    }
+    
+    m_sceneWidth = width;
+    updateGrid();
+    updateMarkers();
+}
+
+size_t QImagesWidget::sceneHeight() const
+{
+    return m_sceneHeight;
+}
+
+void QImagesWidget::setSceneHeight(size_t height)
+{
+    if (m_sceneHeight == height || height <= 0) {
+        return;
+    }
+    
+    m_sceneHeight = height;
     updateGrid();
     updateMarkers();
 }
@@ -80,6 +151,81 @@ void QImagesWidget::setImages(const QList<QImage>& images)
     updateMarkers();
 }
 
+int QImagesWidget::horizontalSpacing() const
+{
+    return m_grid->horizontalSpacing();
+}
+
+void QImagesWidget::setHorizontalSpacing(int spacing)
+{
+    if (m_grid->horizontalSpacing() == spacing || spacing < 0) {
+        return;
+    }
+    m_grid->setHorizontalSpacing(spacing);
+    updateGrid();
+    updateMarkers();
+}
+
+int QImagesWidget::verticalSpacing() const
+{
+    return m_grid->verticalSpacing();
+}
+
+void QImagesWidget::setVerticalSpacing(int spacing)
+{
+    if (m_grid->verticalSpacing() == spacing || spacing < 0) {
+        return;
+    }
+    m_grid->setVerticalSpacing(spacing);
+    updateGrid();
+    updateMarkers();
+}
+
+bool QImagesWidget::isUpdateEnabled() const
+{
+    return m_enableUpdate;
+}
+
+void QImagesWidget::setUpdateEnabled(bool enable)
+{
+    m_enableUpdate = enable;
+}
+
+QPair<double, double> QImagesWidget::sceneOffset(int r, int c) const
+{
+    if (!isValidIndex(r, c)) {
+        return qMakePair(0.0, 0.0);
+    }
+    int linear_index = r * static_cast<int>(m_colNum) + c;
+
+    if (linear_index < 0 || linear_index >= m_scenesOffsets.size()) { 
+        return qMakePair(0.0, 0.0);
+    }
+    return m_scenesOffsets[linear_index];
+}
+
+void QImagesWidget::setSceneOffset(int r, int c, double hOffset, double vOffset)
+{
+    if (!isValidIndex(r, c)) {
+        return;
+    }
+
+    int linear_index = r * static_cast<int>(m_colNum) + c;
+    if (linear_index < 0) { 
+        LOG_ERROR("Calculated negative linear_index in setSceneOffset. This should not happen.");
+        return; 
+    }
+
+    if (linear_index >= m_scenesOffsets.size()) {
+        m_scenesOffsets.resize(linear_index + 1); 
+    }
+
+    m_scenesOffsets[linear_index] = qMakePair(hOffset, vOffset);
+    updateGrid();
+    updateMarkers();
+}
+
+// Public Methods
 bool QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
 {
     if (!isValidIndex(row, col) || !line) {
@@ -124,108 +270,6 @@ const QGraphicsView *QImagesWidget::view(int row, int col) const
     return qobject_cast<QGraphicsView *>(item->widget());
 }
 
-size_t QImagesWidget::colNum() const
-{
-    return m_colNum;
-}
-
-size_t QImagesWidget::rowNum() const
-{
-    return m_rowNum;
-}
-
-size_t QImagesWidget::pageIndex() const
-{
-    return m_pageIndex;
-}
-
-bool QImagesWidget::setPageIndex(size_t index)
-{
-    if (index >= pageCount()) {
-        return false;
-    }
-    
-    if (m_pageIndex != index) {
-        m_pageIndex = index;
-        updateMarkers();
-    }
-    return true;
-}
-
-size_t QImagesWidget::viewWidth() const
-{
-    return m_viewWidth;
-}
-
-size_t QImagesWidget::viewHeight() const
-{
-    return m_viewHeight;
-}
-
-size_t QImagesWidget::sceneWidth() const
-{
-    return m_sceneWidth;
-}
-
-size_t QImagesWidget::sceneHeight() const
-{
-    return m_sceneHeight;
-}
-
-void QImagesWidget::setViewWidth(size_t width)
-{
-    if (m_viewWidth == width || width <= 0) {
-        return;
-    }
-    
-    m_viewWidth = width;
-    updateGrid();
-    updateMarkers();
-}
-
-void QImagesWidget::setViewHeight(size_t height)
-{
-    if (m_viewHeight == height || height <= 0) {
-        return;
-    }
-    
-    m_viewHeight = height;
-    updateGrid();
-    updateMarkers();
-}
-
-void QImagesWidget::setSceneWidth(size_t width)
-{
-    if (m_sceneWidth == width || width <= 0) {
-        return;
-    }
-    
-    m_sceneWidth = width;
-    updateGrid();
-    updateMarkers();
-}
-
-void QImagesWidget::setSceneHeight(size_t height)
-{
-    if (m_sceneHeight == height || height <= 0) {
-        return;
-    }
-    
-    m_sceneHeight = height;
-    updateGrid();
-    updateMarkers();
-}
-
-bool QImagesWidget::isUpdateEnabled() const
-{
-    return m_enableUpdate;
-}
-
-void QImagesWidget::setUpdateEnabled(bool enable)
-{
-    m_enableUpdate = enable;
-}
-
 void QImagesWidget::updateMarkers()
 {
     if (!m_enableUpdate || m_images.isEmpty()) {
@@ -261,60 +305,6 @@ void QImagesWidget::updateMarkers()
     }
 }
 
-std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
-{
-    if (!view) {
-        return {-1, -1};
-    }
-    
-    auto grid = this->gridLayout();
-    if (!grid) {
-        return {-1, -1};
-    }
-
-    for (int row = 0; row < grid->rowCount(); row++) {
-        for (int col = 0; col < grid->columnCount(); col++) {
-            if (this->view(row, col) == view) {
-                return {row, col};
-            }
-        }
-    }
-
-    return {-1, -1};
-}
-
-std::pair<int, int> QImagesWidget::viewPortPosition(QWidget *viewport) const
-{
-    if (!viewport) {
-        return {-1, -1};
-    }
-
-    auto grid = this->gridLayout();
-    if (!grid) {
-        return {-1, -1};
-    }
-
-    for (int row = 0; row < grid->rowCount(); row++) {
-        for (int col = 0; col < grid->columnCount(); col++) {
-            if (this->view(row, col)->viewport() == viewport) {
-                return {row, col};
-            }
-        }
-    }
-
-    return {-1, -1};
-}
-
-bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
-{
-    return QWidget::eventFilter(watched, event);
-}
-
-QGridLayout *QImagesWidget::gridLayout() const
-{
-    return m_grid;
-}
-
 size_t QImagesWidget::pageCount() const
 {
     if (m_images.isEmpty() || m_rowNum == 0 || m_colNum == 0) {
@@ -325,14 +315,31 @@ size_t QImagesWidget::pageCount() const
     return (m_images.size() + imagesPerPage - 1) / imagesPerPage; // 向上取整
 }
 
-void QImagesWidget::resizeEvent(QResizeEvent *event)
+QGraphicsScene* QImagesWidget::scene(int row, int col) const
 {
-    LOG_DEBUG("QImagesWidget resizeEvent");
-    LOG_DEBUG(QString("m_rowNum: %1, m_colNum: %2").arg(m_rowNum).arg(m_colNum));
-    LOG_DEBUG(QString("m_viewWidth: %1, m_viewHeight: %2").arg(m_viewWidth).arg(m_viewHeight));
-    QWidget::resizeEvent(event);
-    updateGrid();
-    updateMarkers();
+    auto v = view(row, col);
+    return v ? v->scene() : nullptr;
+}
+
+const QImage& QImagesWidget::imageAt(size_t index) const
+{
+    static QImage emptyImage;
+    if (index >= m_images.size()) {
+        return emptyImage;
+    }
+    return m_images[index];
+}
+
+const QImage& QImagesWidget::imageAt(int row, int col) const
+{
+    if (!isValidIndex(row, col)) {
+        static QImage emptyImage;
+        return emptyImage;
+    }
+    
+    size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
+    size_t index = page_offset + row * m_colNum + col;
+    return imageAt(index);
 }
 
 void QImagesWidget::updateGrid()
@@ -395,99 +402,97 @@ void QImagesWidget::updateGrid()
     m_contentWidget->setFixedSize(totalViewsWidth, totalViewsHeight);
 }
 
+// Protected Methods
+std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
+{
+    if (!view) {
+        return {-1, -1};
+    }
+    
+    auto grid = this->gridLayout();
+    if (!grid) {
+        return {-1, -1};
+    }
+
+    for (int row = 0; row < grid->rowCount(); row++) {
+        for (int col = 0; col < grid->columnCount(); col++) {
+            if (this->view(row, col) == view) {
+                return {row, col};
+            }
+        }
+    }
+
+    return {-1, -1};
+}
+
+std::pair<int, int> QImagesWidget::viewPortPosition(QWidget *viewport) const
+{
+    if (!viewport) {
+        return {-1, -1};
+    }
+
+    auto grid = this->gridLayout();
+    if (!grid) {
+        return {-1, -1};
+    }
+
+    for (int row = 0; row < grid->rowCount(); row++) {
+        for (int col = 0; col < grid->columnCount(); col++) {
+            if (this->view(row, col)->viewport() == viewport) {
+                return {row, col};
+            }
+        }
+    }
+
+    return {-1, -1};
+}
+
+bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    return QWidget::eventFilter(watched, event);
+}
+
+void QImagesWidget::resizeEvent(QResizeEvent *event)
+{
+    LOG_DEBUG("QImagesWidget resizeEvent");
+    LOG_DEBUG(QString("m_rowNum: %1, m_colNum: %2").arg(m_rowNum).arg(m_colNum));
+    LOG_DEBUG(QString("m_viewWidth: %1, m_viewHeight: %2").arg(m_viewWidth).arg(m_viewHeight));
+    QWidget::resizeEvent(event);
+    updateGrid();
+    updateMarkers();
+}
+
+// Private Methods
+void QImagesWidget::setupLayout()
+{
+    auto mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    setLayout(mainLayout);
+
+    m_scrollArea = new QScrollArea(this);
+    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_scrollArea->setAlignment(Qt::AlignCenter);
+
+    m_contentWidget = new QWidget(m_scrollArea);
+
+    m_grid = new QGridLayout(m_contentWidget);
+    m_grid->setSpacing(1);
+    m_grid->setContentsMargins(0, 0, 0, 0);
+
+    m_scrollArea->setWidget(m_contentWidget);
+
+    mainLayout->addWidget(m_scrollArea);
+}
+
+QGridLayout *QImagesWidget::gridLayout() const
+{
+    return m_grid;
+}
+
 bool QImagesWidget::isValidIndex(int row, int col) const
 {
     return (row >= 0 && row < static_cast<int>(m_rowNum) && 
             col >= 0 && col < static_cast<int>(m_colNum));
-}
-
-QGraphicsScene* QImagesWidget::scene(int row, int col) const
-{
-    auto v = view(row, col);
-    return v ? v->scene() : nullptr;
-}
-
-QPair<double, double> QImagesWidget::sceneOffset(int r, int c) const
-{
-    if (!isValidIndex(r, c)) {
-        return qMakePair(0.0, 0.0);
-    }
-    int linear_index = r * static_cast<int>(m_colNum) + c;
-
-    if (linear_index < 0 || linear_index >= m_scenesOffsets.size()) { 
-        return qMakePair(0.0, 0.0);
-    }
-    return m_scenesOffsets[linear_index];
-}
-
-void QImagesWidget::setSceneOffset(int r, int c, double hOffset, double vOffset)
-{
-    if (!isValidIndex(r, c)) {
-        return;
-    }
-
-    int linear_index = r * static_cast<int>(m_colNum) + c;
-    if (linear_index < 0) { 
-        LOG_ERROR("Calculated negative linear_index in setSceneOffset. This should not happen.");
-        return; 
-    }
-
-    if (linear_index >= m_scenesOffsets.size()) {
-        m_scenesOffsets.resize(linear_index + 1); 
-    }
-
-    m_scenesOffsets[linear_index] = qMakePair(hOffset, vOffset);
-    updateGrid();
-    updateMarkers();
-}
-
-const QImage& QImagesWidget::imageAt(size_t index) const
-{
-    static QImage emptyImage;
-    if (index >= m_images.size()) {
-        return emptyImage;
-    }
-    return m_images[index];
-}
-
-const QImage& QImagesWidget::imageAt(int row, int col) const
-{
-    if (!isValidIndex(row, col)) {
-        static QImage emptyImage;
-        return emptyImage;
-    }
-    
-    size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
-    size_t index = page_offset + row * m_colNum + col;
-    return imageAt(index);
-}
-
-void QImagesWidget::setHorizontalSpacing(int spacing)
-{
-    if (m_grid->horizontalSpacing() == spacing || spacing < 0) {
-        return;
-    }
-    m_grid->setHorizontalSpacing(spacing);
-    updateGrid();
-    updateMarkers();
-}
-
-int QImagesWidget::horizontalSpacing() const
-{
-    return m_grid->horizontalSpacing();
-}
-
-void QImagesWidget::setVerticalSpacing(int spacing)
-{
-    if (m_grid->verticalSpacing() == spacing || spacing < 0) {
-        return;
-    }
-    m_grid->setVerticalSpacing(spacing);
-    updateGrid();
-    updateMarkers();
-}
-
-int QImagesWidget::verticalSpacing() const
-{
-    return m_grid->verticalSpacing();
 }
