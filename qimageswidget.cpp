@@ -12,6 +12,10 @@
 // Constructor & Destructor
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
+    , m_viewWidth(256)
+    , m_viewHeight(256)
+    , m_sceneWidth(0)
+    , m_sceneHeight(0)
     , m_scrollArea(nullptr)
     , m_contentWidget(nullptr)
     , m_grid(nullptr)
@@ -84,15 +88,17 @@ size_t QImagesWidget::viewWidth() const
     return m_viewWidth;
 }
 
-void QImagesWidget::setViewWidth(size_t width)
+void QImagesWidget::setViewWidth(size_t newViewWidth)
 {
-    if (m_viewWidth == width || width <= 0) {
+    if (newViewWidth == 0) {
         return;
     }
-    
-    m_viewWidth = width;
-    updateGrid();
-    updateMarkers();
+    if (m_viewWidth != newViewWidth) {
+        m_viewWidth = newViewWidth;
+
+        updateGrid();
+        updateMarkers();
+    }
 }
 
 size_t QImagesWidget::viewHeight() const
@@ -100,47 +106,53 @@ size_t QImagesWidget::viewHeight() const
     return m_viewHeight;
 }
 
-void QImagesWidget::setViewHeight(size_t height)
+void QImagesWidget::setViewHeight(size_t newViewHeight)
 {
-    if (m_viewHeight == height || height <= 0) {
+    if (newViewHeight == 0) {
         return;
     }
-    
-    m_viewHeight = height;
-    updateGrid();
-    updateMarkers();
+    if (m_viewHeight != newViewHeight) {
+        m_viewHeight = newViewHeight;
+        
+        updateGrid();
+        updateMarkers();
+    }
 }
 
 size_t QImagesWidget::sceneWidth() const
 {
+    if (m_sceneWidth == 0 && m_viewWidth > 0) {
+        return m_viewWidth;
+    }
     return m_sceneWidth;
 }
 
-void QImagesWidget::setSceneWidth(size_t width)
+void QImagesWidget::setSceneWidth(size_t newSceneWidth)
 {
-    if (m_sceneWidth == width || width <= 0) {
-        return;
+    // Set scene width to 0 to re-enable tracking view width
+    if (m_sceneWidth != newSceneWidth) {
+        m_sceneWidth = newSceneWidth;
+        updateGrid();
+        updateMarkers();
     }
-    
-    m_sceneWidth = width;
-    updateGrid();
-    updateMarkers();
 }
 
 size_t QImagesWidget::sceneHeight() const
 {
+    if (m_sceneHeight == 0 && m_viewHeight > 0) {
+        return m_viewHeight;
+    }
     return m_sceneHeight;
 }
 
-void QImagesWidget::setSceneHeight(size_t height)
+void QImagesWidget::setSceneHeight(size_t newSceneHeight)
 {
-    if (m_sceneHeight == height || height <= 0) {
-        return;
+    // Set scene height to 0 to re-enable tracking view height
+    if (m_sceneHeight != newSceneHeight) {
+        m_sceneHeight = newSceneHeight;
+        updateGrid();
+        updateMarkers();
     }
-    
-    m_sceneHeight = height;
-    updateGrid();
-    updateMarkers();
 }
 
 void QImagesWidget::setImages(const QList<QImage>& images)
@@ -276,6 +288,14 @@ void QImagesWidget::updateMarkers()
         return;
     }
 
+    size_t currentSceneWidth = this->sceneWidth();
+    size_t currentSceneHeight = this->sceneHeight();
+
+    if (currentSceneWidth == 0 || currentSceneHeight == 0) { // If effective scene size is zero, do nothing
+         LOG_ERROR("Effective scene width or height is zero in updateMarkers. Skipping update.");
+        return;
+    }
+
     size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
     for (size_t row = 0; row < m_rowNum; row++) {
         for (size_t col = 0; col < m_colNum; col++) {
@@ -296,7 +316,7 @@ void QImagesWidget::updateMarkers()
             auto scene = view->scene();
             scene->clear();
             auto image = m_images[static_cast<int>(index)];
-            image = image.scaled(static_cast<int>(m_sceneWidth), static_cast<int>(m_sceneHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            image = image.scaled(static_cast<int>(currentSceneWidth), static_cast<int>(currentSceneHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             auto pixmap = scene->addPixmap(QPixmap::fromImage(image));
             
             auto [hOffset, vOffset] = sceneOffset(static_cast<int>(row), static_cast<int>(col));
@@ -357,7 +377,11 @@ void QImagesWidget::updateGrid()
         delete item;
     }
 
-    if (m_rowNum == 0 || m_colNum == 0) {
+    // Use getters to ensure correct scene dimensions are used
+    size_t currentSceneWidth = this->sceneWidth();
+    size_t currentSceneHeight = this->sceneHeight();
+
+    if (m_rowNum == 0 || m_colNum == 0 || currentSceneWidth == 0 || currentSceneHeight == 0) {
         m_contentWidget->setFixedSize(0,0);
         return;
     }
@@ -367,7 +391,8 @@ void QImagesWidget::updateGrid()
             QGraphicsScene* scene = nullptr;
             auto [hOffset, vOffset] = sceneOffset(static_cast<int>(row), static_cast<int>(col));
             
-            scene = new QGraphicsScene(hOffset, vOffset, static_cast<qreal>(m_sceneWidth), static_cast<qreal>(m_sceneHeight)); 
+            // Use effective scene dimensions from getters
+            scene = new QGraphicsScene(hOffset, vOffset, static_cast<qreal>(currentSceneWidth), static_cast<qreal>(currentSceneHeight)); 
             
             auto view = new QGraphicsView(scene, m_contentWidget);
             scene->setParent(view);
@@ -454,9 +479,6 @@ bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
 
 void QImagesWidget::resizeEvent(QResizeEvent *event)
 {
-    LOG_DEBUG("QImagesWidget resizeEvent");
-    LOG_DEBUG(QString("m_rowNum: %1, m_colNum: %2").arg(m_rowNum).arg(m_colNum));
-    LOG_DEBUG(QString("m_viewWidth: %1, m_viewHeight: %2").arg(m_viewWidth).arg(m_viewHeight));
     QWidget::resizeEvent(event);
     updateGrid();
     updateMarkers();
