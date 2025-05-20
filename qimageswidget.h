@@ -126,6 +126,30 @@ public:
     void setImages(const QList<QImage>& images);
 
     /**
+     * @brief 设置水平间距
+     * @param spacing 间距值
+     */
+    void setHorizontalSpacing(int spacing);
+
+    /**
+     * @brief 获取水平间距
+     * @return 水平间距值
+     */
+    int horizontalSpacing() const;
+
+    /**
+     * @brief 设置垂直间距
+     * @param spacing 间距值
+     */
+    void setVerticalSpacing(int spacing);
+
+    /**
+     * @brief 获取垂直间距
+     * @return 垂直间距值
+     */
+    int verticalSpacing() const;
+
+    /**
      * @brief 添加直线到指定位置
      * @param row 行索引
      * @param col 列索引

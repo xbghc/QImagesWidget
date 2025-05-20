@@ -33,7 +33,7 @@ void QImagesWidget::setupLayout()
     m_contentWidget = new QWidget(m_scrollArea);
 
     m_grid = new QGridLayout(m_contentWidget);
-    m_grid->setSpacing(0);
+    m_grid->setSpacing(1);
     m_grid->setContentsMargins(0, 0, 0, 0);
 
     m_scrollArea->setWidget(m_contentWidget);
@@ -460,4 +460,34 @@ const QImage& QImagesWidget::imageAt(int row, int col) const
     size_t page_offset = m_pageIndex * m_rowNum * m_colNum;
     size_t index = page_offset + row * m_colNum + col;
     return imageAt(index);
+}
+
+void QImagesWidget::setHorizontalSpacing(int spacing)
+{
+    if (m_grid->horizontalSpacing() == spacing || spacing < 0) {
+        return;
+    }
+    m_grid->setHorizontalSpacing(spacing);
+    updateGrid();
+    updateMarkers();
+}
+
+int QImagesWidget::horizontalSpacing() const
+{
+    return m_grid->horizontalSpacing();
+}
+
+void QImagesWidget::setVerticalSpacing(int spacing)
+{
+    if (m_grid->verticalSpacing() == spacing || spacing < 0) {
+        return;
+    }
+    m_grid->setVerticalSpacing(spacing);
+    updateGrid();
+    updateMarkers();
+}
+
+int QImagesWidget::verticalSpacing() const
+{
+    return m_grid->verticalSpacing();
 }
