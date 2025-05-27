@@ -262,8 +262,6 @@ protected:
 
     bool eventFilter(QObject *watched, QEvent *event) override;
 
-    void resizeEvent(QResizeEvent *event) override;
-
 private:
     // Private Members
     size_t m_colNum = 1;

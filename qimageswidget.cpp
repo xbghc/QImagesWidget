@@ -477,13 +477,6 @@ bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-void QImagesWidget::resizeEvent(QResizeEvent *event)
-{
-    QWidget::resizeEvent(event);
-    updateGrid();
-    updateMarkers();
-}
-
 // Private Methods
 void QImagesWidget::setupLayout()
 {
