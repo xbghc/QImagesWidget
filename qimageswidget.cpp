@@ -577,28 +577,6 @@ void QImagesWidget::updateGrid()
     m_contentWidget->setFixedSize(totalViewsWidth, totalViewsHeight);
 }
 
-std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
-{
-    if (!view) {
-        return {-1, -1};
-    }
-    
-    auto grid = this->gridLayout();
-    if (!grid) {
-        return {-1, -1};
-    }
-
-    for (int row = 0; row < grid->rowCount(); row++) {
-        for (int col = 0; col < grid->columnCount(); col++) {
-            if (this->view(row, col) == view) {
-                return {row, col};
-            }
-        }
-    }
-
-    return {-1, -1};
-}
-
 bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
 {
     return QWidget::eventFilter(watched, event);

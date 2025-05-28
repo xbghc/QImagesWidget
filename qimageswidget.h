@@ -174,8 +174,6 @@ public:
     void updateGrid();
 
 protected:
-    std::pair<int, int> viewPosition(QGraphicsView* view) const;
-
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
