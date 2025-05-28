@@ -9,7 +9,6 @@
 #include <QVBoxLayout>
 
 
-// Constructor & Destructor
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
     , m_viewWidth(256)
@@ -23,16 +22,8 @@ QImagesWidget::QImagesWidget(QWidget *parent)
     setupLayout();
 }
 
-QImagesWidget::~QImagesWidget() {
-    // Qt's parent-child ownership handles deletion of m_scrollArea,
-    // m_contentWidget, and m_grid (as m_contentWidget's layout).
-    // QGraphicsView instances added to m_grid are children of m_contentWidget.
-    // If QGraphicsScene instances are children of their respective QGraphicsView instances (as per the updated updateGrid),
-    // then they will be automatically deleted when their parent view is deleted.
-    // No explicit cleanup of scenes is needed here or in updateGrid if that parentage is set.
-}
+QImagesWidget::~QImagesWidget() {}
 
-// Public Getters & Setters
 size_t QImagesWidget::colNum() const
 {
     return m_colNum;
@@ -237,7 +228,6 @@ void QImagesWidget::setSceneOffset(int r, int c, double hOffset, double vOffset)
     updateMarkers();
 }
 
-// Public Methods
 bool QImagesWidget::addItem(int row, int col, QGraphicsItem* item)
 {
     if (!isValidIndex(row, col) || !item) {
@@ -427,7 +417,6 @@ void QImagesWidget::updateGrid()
     m_contentWidget->setFixedSize(totalViewsWidth, totalViewsHeight);
 }
 
-// Protected Methods
 std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
 {
     if (!view) {
@@ -477,7 +466,6 @@ bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-// Private Methods
 void QImagesWidget::setupLayout()
 {
     auto mainLayout = new QVBoxLayout(this);
