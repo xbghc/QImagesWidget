@@ -7,7 +7,156 @@
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <QContextMenuEvent>
+#include <QMenu>
+#include <QAction>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QGraphicsPixmapItem>
+#include <QPainter>
 
+
+QImagesWidgetItemView::QImagesWidgetItemView(QWidget* parent)
+    : QGraphicsView(parent)
+    , m_scene(this)
+{
+    setScene(&m_scene);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setAlignment(Qt::AlignCenter);
+    setFrameShape(QFrame::NoFrame);
+    setContextMenuPolicy(Qt::DefaultContextMenu);
+}
+
+QImagesWidgetItemView::~QImagesWidgetItemView() = default;
+
+QGraphicsPixmapItem* QImagesWidgetItemView::setImage(const QImage& image)
+{
+    m_image = image;
+    m_scene.clear();
+
+    if (image.isNull()) {
+        LOG_ERROR("setImage: image is null");
+        return nullptr;
+    }
+    
+    QPixmap pixmap = QPixmap::fromImage(image);
+    return m_scene.addPixmap(pixmap);
+}
+
+void QImagesWidgetItemView::contextMenuEvent(QContextMenuEvent* event)
+{
+    if (m_image.isNull()) {
+        QGraphicsView::contextMenuEvent(event);
+        return;
+    }
+
+    QMenu contextMenu(this);
+    
+    // 保存图像子菜单
+    QMenu* saveMenu = contextMenu.addMenu(tr("Save Image"));
+    QAction* saveImageOnlyAction = saveMenu->addAction(tr("Save Original Image Only"));
+    QAction* saveWithObjectsAction = saveMenu->addAction(tr("Save with Graphics Objects"));
+    
+    // 复制图像子菜单
+    QMenu* copyMenu = contextMenu.addMenu(tr("Copy Image"));
+    QAction* copyImageOnlyAction = copyMenu->addAction(tr("Copy Original Image Only"));
+    QAction* copyWithObjectsAction = copyMenu->addAction(tr("Copy with Graphics Objects"));
+    
+    QAction* selectedAction = contextMenu.exec(event->globalPos());
+    
+    if (selectedAction == saveImageOnlyAction) {
+        saveImage(false);
+    } else if (selectedAction == saveWithObjectsAction) {
+        saveImage(true);
+    } else if (selectedAction == copyImageOnlyAction) {
+        copyImage(false);
+    } else if (selectedAction == copyWithObjectsAction) {
+        copyImage(true);
+    }
+}
+
+void QImagesWidgetItemView::saveImage(bool withObjects)
+{
+    if (m_image.isNull()) {
+        return;
+    }
+    
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Image"),
+        QString("image.png"),
+        tr("Image Files (*.png *.jpg *.jpeg *.bmp *.tiff)")
+    );
+    
+    if (!fileName.isEmpty()) {
+        QImage imageToSave;
+        
+        if (withObjects) {
+            // 渲染整个场景（包含图形对象）
+            QRectF sceneRect = m_scene.sceneRect();
+            if (sceneRect.isEmpty()) {
+                sceneRect = m_scene.itemsBoundingRect();
+            }
+            
+            imageToSave = QImage(sceneRect.size().toSize(), QImage::Format_ARGB32);
+            imageToSave.fill(Qt::transparent);
+            
+            QPainter painter(&imageToSave);
+            painter.setRenderHint(QPainter::Antialiasing);
+            m_scene.render(&painter, QRectF(), sceneRect);
+            painter.end();
+        } else {
+            // 仅保存原图
+            imageToSave = m_image;
+        }
+        
+        if (imageToSave.save(fileName)) {
+            QString message = withObjects ? 
+                tr("Image with graphics objects saved to: %1").arg(fileName) :
+                tr("Original image saved to: %1").arg(fileName);
+            QMessageBox::information(this, tr("Success"), message);
+        } else {
+            QMessageBox::warning(this, tr("Error"), tr("Failed to save image"));
+        }
+    }
+}
+
+void QImagesWidgetItemView::copyImage(bool withObjects)
+{
+    if (m_image.isNull()) {
+        return;
+    }
+    
+    QClipboard* clipboard = QApplication::clipboard();
+    QImage imageToCopy;
+    
+    if (withObjects) {
+        // 渲染整个场景（包含图形对象）
+        QRectF sceneRect = m_scene.sceneRect();
+        if (sceneRect.isEmpty()) {
+            sceneRect = m_scene.itemsBoundingRect();
+        }
+        
+        imageToCopy = QImage(sceneRect.size().toSize(), QImage::Format_ARGB32);
+        imageToCopy.fill(Qt::transparent);
+        
+        QPainter painter(&imageToCopy);
+        painter.setRenderHint(QPainter::Antialiasing);
+        m_scene.render(&painter, QRectF(), sceneRect);
+        painter.end();
+    } else {
+        // 仅复制原图
+        imageToCopy = m_image;
+    }
+    
+    clipboard->setImage(imageToCopy);
+    
+    QString message = withObjects ? 
+        tr("Image with graphics objects copied to clipboard") :
+        tr("Original image copied to clipboard");
+    QMessageBox::information(this, tr("Success"), message);
+}
 
 QImagesWidget::QImagesWidget(QWidget *parent)
     : QWidget{parent}
@@ -244,7 +393,7 @@ bool QImagesWidget::addItem(int row, int col, QGraphicsItem* item)
 
 bool QImagesWidget::addItem(int index, QGraphicsItem* item)
 {
-    if (index < 0 || !item) {
+    if (index < 0 || !item || m_colNum == 0) {
         return false;
     }
     
@@ -272,6 +421,25 @@ const QGraphicsView *QImagesWidget::view(int row, int col) const
     return qobject_cast<QGraphicsView *>(item->widget());
 }
 
+QImagesWidgetItemView* QImagesWidget::itemView(int row, int col) const
+{
+    if (!isValidIndex(row, col)) {
+        return nullptr;
+    }
+
+    auto grid = gridLayout();
+    if (!grid) {
+        return nullptr;
+    }
+
+    auto item = grid->itemAtPosition(row, col);
+    if (!item) {
+        return nullptr;
+    }
+
+    return qobject_cast<QImagesWidgetItemView*>(item->widget());
+}
+
 void QImagesWidget::updateMarkers()
 {
     if (!m_enableUpdate || m_images.isEmpty()) {
@@ -290,27 +458,30 @@ void QImagesWidget::updateMarkers()
     for (size_t row = 0; row < m_rowNum; row++) {
         for (size_t col = 0; col < m_colNum; col++) {
             size_t index = page_offset + row * m_colNum + col;
+            
+            auto itemView = this->itemView(static_cast<int>(row), static_cast<int>(col));
+            if (!itemView) {
+                continue;
+            }
+            
             if (index >= static_cast<size_t>(m_images.size())) {
-                auto view_to_clear = this->view(static_cast<int>(row), static_cast<int>(col));
-                if (view_to_clear && view_to_clear->scene()) {
-                    view_to_clear->scene()->clear();
-                }
+                itemView->setImage(QImage());
                 continue;
             }
 
-            auto view = this->view(static_cast<int>(row), static_cast<int>(col));
-            if (!view || !view->scene()) {
-                continue;
-            }
-            
-            auto scene = view->scene();
-            scene->clear();
+            // 缩放图像并设置到自定义视图
             auto image = m_images[static_cast<int>(index)];
             image = image.scaled(static_cast<int>(currentSceneWidth), static_cast<int>(currentSceneHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            auto pixmap = scene->addPixmap(QPixmap::fromImage(image));
+            auto pixmapItem = itemView->setImage(image);
             
+            // 设置场景偏移
             auto [hOffset, vOffset] = sceneOffset(static_cast<int>(row), static_cast<int>(col));
-            pixmap->setPos(hOffset, vOffset);
+            itemView->setSceneRect(hOffset, vOffset, static_cast<qreal>(currentSceneWidth), static_cast<qreal>(currentSceneHeight));
+            
+            // 设置pixmap位置（仅当pixmapItem不为空时）
+            if (pixmapItem) {
+                pixmapItem->setPos(hOffset, vOffset);
+            }
         }
     }
 }
@@ -378,22 +549,12 @@ void QImagesWidget::updateGrid()
         
     for (size_t row = 0; row < m_rowNum; row++) {
         for (size_t col = 0; col < m_colNum; col++) {
-            QGraphicsScene* scene = nullptr;
             auto [hOffset, vOffset] = sceneOffset(static_cast<int>(row), static_cast<int>(col));
             
-            // Use effective scene dimensions from getters
-            scene = new QGraphicsScene(hOffset, vOffset, static_cast<qreal>(currentSceneWidth), static_cast<qreal>(currentSceneHeight)); 
-            
-            auto view = new QGraphicsView(scene, m_contentWidget);
-            scene->setParent(view);
+            auto view = new QImagesWidgetItemView(m_contentWidget);
+            view->setSceneRect(hOffset, vOffset, static_cast<qreal>(currentSceneWidth), static_cast<qreal>(currentSceneHeight));
 
             view->setFixedSize(static_cast<int>(m_viewWidth), static_cast<int>(m_viewHeight));
-            view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            view->setAlignment(Qt::AlignCenter);
-            view->setFrameShape(QFrame::NoFrame); 
-
-            view->viewport()->installEventFilter(this);
             grid->addWidget(view, static_cast<int>(row), static_cast<int>(col));
         }
     }
@@ -452,7 +613,8 @@ std::pair<int, int> QImagesWidget::viewPortPosition(QWidget *viewport) const
 
     for (int row = 0; row < grid->rowCount(); row++) {
         for (int col = 0; col < grid->columnCount(); col++) {
-            if (this->view(row, col)->viewport() == viewport) {
+            auto view = this->view(row, col);
+            if (view && view->viewport() == viewport) {
                 return {row, col};
             }
         }

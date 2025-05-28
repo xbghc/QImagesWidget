@@ -10,6 +10,15 @@
 
 ## Interface
 
+### QImagesWidgetItemView
+
+A custom graphics view that provides enhanced image display capabilities:
+
+- `setImage(const QImage& image)`: Set the image to display, returns QGraphicsPixmapItem* for further customization
+- Right-click context menu with save/copy options (original image or with graphics objects)
+
+### QImagesWidget
+
 ### init(size_t r, size_t c, size_t w, size_t h)
 
 Initialize the widget with specified rows, columns, width, and height.

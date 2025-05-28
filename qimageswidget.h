@@ -12,6 +12,28 @@
 #include <QVector>
 #include <QEvent>
 #include <QScrollArea>
+#include <QClipboard>
+#include <QApplication>
+
+
+class QImagesWidgetItemView: public QGraphicsView{
+    Q_OBJECT
+public:
+    QImagesWidgetItemView(QWidget* parent = nullptr);
+    ~QImagesWidgetItemView() override;
+
+    QGraphicsPixmapItem* setImage(const QImage& image);
+
+protected:
+    void contextMenuEvent(QContextMenuEvent* event) override;
+
+private:
+    void saveImage(bool withObjects = false);
+    void copyImage(bool withObjects = false);
+
+    QImage m_image;
+    QGraphicsScene m_scene;
+};
 
 /**
  * @brief 图像网格控件
@@ -103,6 +125,14 @@ public:
      * @return 对应位置的视图对象
      */
     const QGraphicsView* view(int row, int col) const;
+
+    /**
+     * @brief 返回指定位置的QImagesWidgetItemView对象
+     * @param row 行索引
+     * @param col 列索引
+     * @return 对应位置的自定义视图对象
+     */
+    QImagesWidgetItemView* itemView(int row, int col) const;
 
     /**
      * @brief 更新视图标记
