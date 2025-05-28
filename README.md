@@ -28,8 +28,8 @@ Set the images to be displayed. The images will be arranged according to the cur
 
 ### Adding Graphics
 
-- `addLine(int row, int col, QGraphicsLineItem* line)`: Add a line to the image at specified row and column
-- `addLine(int index, QGraphicsLineItem* line)`: Add a line to the image at specified index
+- `addItem(int row, int col, QGraphicsItem* item)`: Add a graphics item to the image at specified row and column
+- `addItem(int index, QGraphicsItem* item)`: Add a graphics item to the image at specified index
 
 ### Updating Display
 
@@ -41,6 +41,3 @@ Set the images to be displayed. The images will be arranged according to the cur
   - `row`: The row index of the clicked grid cell
   - `col`: The column index of the clicked grid cell
   - `pos`: The relative position of the click within the scene (in scene coordinates)
-
-
-

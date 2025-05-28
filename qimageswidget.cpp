@@ -238,29 +238,29 @@ void QImagesWidget::setSceneOffset(int r, int c, double hOffset, double vOffset)
 }
 
 // Public Methods
-bool QImagesWidget::addLine(int row, int col, QGraphicsLineItem* line)
+bool QImagesWidget::addItem(int row, int col, QGraphicsItem* item)
 {
-    if (!isValidIndex(row, col) || !line) {
+    if (!isValidIndex(row, col) || !item) {
         return false;
     }
     
     auto view = this->view(row, col);
     if (view && view->scene()) {
-        view->scene()->addItem(line);
+        view->scene()->addItem(item);
         return true;
     }
     return false;
 }
 
-bool QImagesWidget::addLine(int index, QGraphicsLineItem* line)
+bool QImagesWidget::addItem(int index, QGraphicsItem* item)
 {
-    if (index < 0 || !line) {
+    if (index < 0 || !item) {
         return false;
     }
     
     int row = index/m_colNum;
     int col = index%m_colNum;
-    return addLine(row, col, line);
+    return addItem(row, col, item);
 }
 
 const QGraphicsView *QImagesWidget::view(int row, int col) const

@@ -179,23 +179,22 @@ public:
      */
     void setSceneOffset(int row, int col, double hOffset, double vOffset);
 
-    // Public Methods
     /**
-     * @brief 添加直线到指定位置
+     * @brief 添加图形项到指定位置
      * @param row 行索引
      * @param col 列索引
-     * @param line 直线对象
+     * @param item 图形项对象
      * @return 添加是否成功
      */
-    bool addLine(int row, int col, QGraphicsLineItem* line);
+    bool addItem(int row, int col, QGraphicsItem* item);
     
     /**
-     * @brief 添加直线到指定索引位置
+     * @brief 添加图形项到指定索引位置
      * @param index 线性索引
-     * @param line 直线对象
+     * @param item 图形项对象
      * @return 添加是否成功
      */
-    bool addLine(int index, QGraphicsLineItem* line);
+    bool addItem(int index, QGraphicsItem* item);
 
     /**
      * @brief 返回指定位置的QGraphicsView对象
