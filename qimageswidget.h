@@ -176,8 +176,6 @@ public:
 protected:
     std::pair<int, int> viewPosition(QGraphicsView* view) const;
 
-    std::pair<int, int> viewPortPosition(QWidget* view) const;
-
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:

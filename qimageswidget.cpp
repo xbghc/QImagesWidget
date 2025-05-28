@@ -599,29 +599,6 @@ std::pair<int, int> QImagesWidget::viewPosition(QGraphicsView *view) const
     return {-1, -1};
 }
 
-std::pair<int, int> QImagesWidget::viewPortPosition(QWidget *viewport) const
-{
-    if (!viewport) {
-        return {-1, -1};
-    }
-
-    auto grid = this->gridLayout();
-    if (!grid) {
-        return {-1, -1};
-    }
-
-    for (int row = 0; row < grid->rowCount(); row++) {
-        for (int col = 0; col < grid->columnCount(); col++) {
-            auto view = this->view(row, col);
-            if (view && view->viewport() == viewport) {
-                return {row, col};
-            }
-        }
-    }
-
-    return {-1, -1};
-}
-
 bool QImagesWidget::eventFilter(QObject *watched, QEvent *event)
 {
     return QWidget::eventFilter(watched, event);
