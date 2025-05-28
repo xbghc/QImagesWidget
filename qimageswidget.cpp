@@ -44,6 +44,17 @@ QGraphicsPixmapItem* QImagesWidgetItemView::setImage(const QImage& image)
     return m_scene.addPixmap(pixmap);
 }
 
+QPair<double, double> QImagesWidgetItemView::sceneOffset() const
+{
+    auto sceneRect = m_scene.sceneRect();
+    return qMakePair(sceneRect.x(), sceneRect.y());
+}
+
+void QImagesWidgetItemView::setSceneOffset(double hOffset, double vOffset)
+{
+    m_scene.setSceneRect(hOffset, vOffset, m_scene.width(), m_scene.height());
+}
+
 void QImagesWidgetItemView::contextMenuEvent(QContextMenuEvent* event)
 {
     if (m_image.isNull()) {
@@ -345,34 +356,22 @@ void QImagesWidget::setUpdateEnabled(bool enable)
 
 QPair<double, double> QImagesWidget::sceneOffset(int r, int c) const
 {
-    if (!isValidIndex(r, c)) {
+    auto itemView = this->itemView(r, c);
+    if (!itemView) {
         return qMakePair(0.0, 0.0);
     }
-    int linear_index = r * static_cast<int>(m_colNum) + c;
-
-    if (linear_index < 0 || linear_index >= m_scenesOffsets.size()) { 
-        return qMakePair(0.0, 0.0);
-    }
-    return m_scenesOffsets[linear_index];
+    return itemView->sceneOffset();
 }
 
 void QImagesWidget::setSceneOffset(int r, int c, double hOffset, double vOffset)
 {
-    if (!isValidIndex(r, c)) {
+    auto itemView = this->itemView(r, c);
+    if (!itemView) {
         return;
     }
 
-    int linear_index = r * static_cast<int>(m_colNum) + c;
-    if (linear_index < 0) { 
-        LOG_ERROR("Calculated negative linear_index in setSceneOffset. This should not happen.");
-        return; 
-    }
-
-    if (linear_index >= m_scenesOffsets.size()) {
-        m_scenesOffsets.resize(linear_index + 1); 
-    }
-
-    m_scenesOffsets[linear_index] = qMakePair(hOffset, vOffset);
+    itemView->setSceneOffset(hOffset, vOffset);
+    
     updateGrid();
     updateMarkers();
 }

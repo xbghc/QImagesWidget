@@ -24,6 +24,9 @@ public:
 
     QGraphicsPixmapItem* setImage(const QImage& image);
 
+    QPair<double, double> sceneOffset() const;
+    void setSceneOffset(double hOffset, double vOffset);
+
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
 
@@ -188,7 +191,6 @@ private:
     bool m_enableUpdate = true;
 
     QList<QImage> m_images;
-    QVector<QPair<double, double>> m_scenesOffsets;
 
     QScrollArea* m_scrollArea;
     QWidget* m_contentWidget;
