@@ -12,6 +12,28 @@
 #include <QVector>
 #include <QEvent>
 #include <QScrollArea>
+#include <QClipboard>
+#include <QApplication>
+
+
+class QImagesWidgetItemView: public QGraphicsView{
+    Q_OBJECT
+public:
+    QImagesWidgetItemView(QWidget* parent = nullptr);
+    ~QImagesWidgetItemView() override;
+
+    QGraphicsPixmapItem* setImage(const QImage& image);
+
+protected:
+    void contextMenuEvent(QContextMenuEvent* event) override;
+
+private:
+    void saveImage(bool withObjects = false);
+    void copyImage(bool withObjects = false);
+
+    QImage m_image;
+    QGraphicsScene m_scene;
+};
 
 /**
  * @brief 图像网格控件
@@ -22,142 +44,42 @@ class QImagesWidget : public QWidget
 {
     Q_OBJECT
 public:
-    // Constructor & Destructor
-    /**
-     * @brief 构造图像网格控件
-     * @param parent 父控件
-     */
     explicit QImagesWidget(QWidget *parent = nullptr);
-    
-    /**
-     * @brief 析构函数，释放所有资源
-     */
     ~QImagesWidget() override;
 
-    // Public Getters & Setters
-    /**
-     * @brief 获取列数
-     * @return 当前列数
-     */
     size_t colNum() const;
-    
-    /**
-     * @brief 设置列数
-     * @param cols 列数
-     */
     void setColNum(size_t cols);
 
-    /**
-     * @brief 获取行数
-     * @return 当前行数
-     */
     size_t rowNum() const;
-    
-    /**
-     * @brief 设置行数
-     * @param rows 行数
-     */
     void setRowNum(size_t rows);
 
-    /**
-     * @brief 获取当前页索引
-     * @return 当前页索引
-     */
     size_t pageIndex() const;
-    
-    /**
-     * @brief 设置当前页索引
-     * @param index 页索引
-     * @return 设置是否成功
-     */
     bool setPageIndex(size_t index);
 
-    /**
-     * @brief 获取图像宽度
-     * @return 图像宽度
-     */
     size_t viewWidth() const;
-    
-    /**
-     * @brief 设置图像宽度
-     * @param width 宽度
-     */
     void setViewWidth(size_t width);
 
-    /**
-     * @brief 获取图像高度
-     * @return 图像高度
-     */
     size_t viewHeight() const;
-    
-    /**
-     * @brief 设置图像高度
-     * @param height 高度
-     */
     void setViewHeight(size_t height);
 
-    /**
-     * @brief 获取场景宽度
-     * @return 场景宽度
-     */
     size_t sceneWidth() const;
-
-    /**
-     * @brief 设置场景宽度
-     * @param width 宽度
-     */
     void setSceneWidth(size_t width);
 
-    /**
-     * @brief 获取场景高度
-     * @return 场景高度
-     */
     size_t sceneHeight() const;
-
-    /**
-     * @brief 设置场景高度
-     * @param height 高度
-     */
     void setSceneHeight(size_t height);
 
-    /**
-     * @brief 设置图片列表
-     * @param images 图片列表
-     */
     void setImages(const QList<QImage>& images);
     
-    /**
-     * @brief 获取水平间距
-     * @return 水平间距值
-     */
     int horizontalSpacing() const;
-
-    /**
-     * @brief 设置水平间距
-     * @param spacing 间距值
-     */
     void setHorizontalSpacing(int spacing);
 
-    /**
-     * @brief 获取垂直间距
-     * @return 垂直间距值
-     */
     int verticalSpacing() const;
-
-    /**
-     * @brief 设置垂直间距
-     * @param spacing 间距值
-     */
     void setVerticalSpacing(int spacing);
 
-    /**
-     * @brief 获取更新启用状态
-     * @return 是否启用更新
-     */
     bool isUpdateEnabled() const;
 
     /**
-     * @brief 设置更新启用状态
+     * @brief 设置updateMarkers的启用状态，设置为false会停止画面更新
      * @param enable 是否启用更新
      */
     void setUpdateEnabled(bool enable);
@@ -179,23 +101,22 @@ public:
      */
     void setSceneOffset(int row, int col, double hOffset, double vOffset);
 
-    // Public Methods
     /**
-     * @brief 添加直线到指定位置
+     * @brief 添加图形项到指定位置
      * @param row 行索引
      * @param col 列索引
-     * @param line 直线对象
+     * @param item 图形项对象
      * @return 添加是否成功
      */
-    bool addLine(int row, int col, QGraphicsLineItem* line);
+    bool addItem(int row, int col, QGraphicsItem* item);
     
     /**
-     * @brief 添加直线到指定索引位置
+     * @brief 添加图形项到指定索引位置
      * @param index 线性索引
-     * @param line 直线对象
+     * @param item 图形项对象
      * @return 添加是否成功
      */
-    bool addLine(int index, QGraphicsLineItem* line);
+    bool addItem(int index, QGraphicsItem* item);
 
     /**
      * @brief 返回指定位置的QGraphicsView对象
@@ -204,6 +125,14 @@ public:
      * @return 对应位置的视图对象
      */
     const QGraphicsView* view(int row, int col) const;
+
+    /**
+     * @brief 返回指定位置的QImagesWidgetItemView对象
+     * @param row 行索引
+     * @param col 列索引
+     * @return 对应位置的自定义视图对象
+     */
+    QImagesWidgetItemView* itemView(int row, int col) const;
 
     /**
      * @brief 更新视图标记
@@ -239,31 +168,16 @@ public:
      */
     const QImage& imageAt(int row, int col) const;
 
-    /**
-     * @brief 更新网格布局
-     */
     void updateGrid();
 
 protected:
-    // Protected Methods
-    /**
-     * @brief 获取视图的位置
-     * @param view 视图对象
-     * @return 行列位置对
-     */
     std::pair<int, int> viewPosition(QGraphicsView* view) const;
 
-    /**
-     * @brief 获取视图窗口的位置
-     * @param view 视图窗口对象
-     * @return 行列位置对
-     */
     std::pair<int, int> viewPortPosition(QWidget* view) const;
 
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
-    // Private Members
     size_t m_colNum = 1;
     size_t m_rowNum = 1;
     size_t m_pageIndex = 0;
@@ -280,24 +194,9 @@ private:
     QWidget* m_contentWidget;
     QGridLayout* m_grid;
 
-    // Private Methods
-    /**
-     * @brief 初始化布局
-     */
     void setupLayout();
-
-    /**
-     * @brief 获取网格布局
-     * @return 网格布局对象
-     */
     QGridLayout* gridLayout() const;
     
-    /**
-     * @brief 检查索引是否有效
-     * @param row 行索引
-     * @param col 列索引
-     * @return 索引是否有效
-     */
     bool isValidIndex(int row, int col) const;
 };
 

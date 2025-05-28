@@ -10,6 +10,15 @@
 
 ## Interface
 
+### QImagesWidgetItemView
+
+A custom graphics view that provides enhanced image display capabilities:
+
+- `setImage(const QImage& image)`: Set the image to display, returns QGraphicsPixmapItem* for further customization
+- Right-click context menu with save/copy options (original image or with graphics objects)
+
+### QImagesWidget
+
 ### init(size_t r, size_t c, size_t w, size_t h)
 
 Initialize the widget with specified rows, columns, width, and height.
@@ -28,8 +37,8 @@ Set the images to be displayed. The images will be arranged according to the cur
 
 ### Adding Graphics
 
-- `addLine(int row, int col, QGraphicsLineItem* line)`: Add a line to the image at specified row and column
-- `addLine(int index, QGraphicsLineItem* line)`: Add a line to the image at specified index
+- `addItem(int row, int col, QGraphicsItem* item)`: Add a graphics item to the image at specified row and column
+- `addItem(int index, QGraphicsItem* item)`: Add a graphics item to the image at specified index
 
 ### Updating Display
 
@@ -41,6 +50,3 @@ Set the images to be displayed. The images will be arranged according to the cur
   - `row`: The row index of the clicked grid cell
   - `col`: The column index of the clicked grid cell
   - `pos`: The relative position of the click within the scene (in scene coordinates)
-
-
-
