@@ -22,6 +22,10 @@ public:
     QImagesWidgetItemView(QWidget* parent = nullptr);
     ~QImagesWidgetItemView() override;
 
+    /**
+     * @brief 设置图像
+     * @details 默认将图像设置到seneRect的中心
+     */
     QGraphicsPixmapItem* setImage(const QImage& image);
 
     QPair<double, double> sceneOffset() const;
