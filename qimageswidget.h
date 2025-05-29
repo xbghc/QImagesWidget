@@ -22,7 +22,14 @@ public:
     QImagesWidgetItemView(QWidget* parent = nullptr);
     ~QImagesWidgetItemView() override;
 
+    /**
+     * @brief 设置图像
+     * @details 默认将图像设置到seneRect的中心
+     */
     QGraphicsPixmapItem* setImage(const QImage& image);
+
+    QPair<double, double> sceneOffset() const;
+    void setSceneOffset(double hOffset, double vOffset);
 
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
@@ -171,10 +178,6 @@ public:
     void updateGrid();
 
 protected:
-    std::pair<int, int> viewPosition(QGraphicsView* view) const;
-
-    std::pair<int, int> viewPortPosition(QWidget* view) const;
-
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
@@ -188,7 +191,6 @@ private:
     bool m_enableUpdate = true;
 
     QList<QImage> m_images;
-    QVector<QPair<double, double>> m_scenesOffsets;
 
     QScrollArea* m_scrollArea;
     QWidget* m_contentWidget;
